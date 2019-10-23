@@ -15,8 +15,6 @@ pub trait ToDoc {
     }
 }
 
-// pub type Id = String;
-
 pub enum Info {
     NoInfo,
     FileInfo(String),
@@ -166,24 +164,11 @@ impl ToDoc for DefPort {
                     .append(Doc::text(" "))
                     .append(tpe.to_doc())
                     .append(info.to_doc())
-                    .append(Doc::space())
+                    .append(Doc::newline())
             }
         }
     }
 }
-
-// pub struct Field {
-//     flip: bool,
-//     id: Id,
-//     ty: Type,
-// }
-
-// pub enum Stmt {
-//     Wire(Id, Type, Info),
-//     Connect(Expr, Expr, Info),
-//     When(Expr, Box<Stmt>, Box<Stmt>),
-//     P
-// }
 
 pub enum PrimOp {
     Add,
@@ -253,6 +238,11 @@ impl ToDoc for PrimOp {
     }
 }
 
+pub enum Stmt {
+    EmptyStmt,
+//    DefInstance(Info, String, String),
+}
+
 pub enum Param {
     IntParam(String, i64),
     StringParam(String, String),
@@ -260,8 +250,32 @@ pub enum Param {
 }
 
 pub enum DefModule {
-    Module(Info, String, Vec<DefPort>),
-    ExtModule(Info, String, Vec<DefPort>, Vec<Param>)
+    Module(Info, String, Vec<DefPort>, Stmt),
+    ExtModule(Info, String, Vec<DefPort>, String, Vec<Param>)
+}
+
+impl ToDoc for DefModule {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            DefModule::Module(info, name, _, _) => {
+                Doc::text("module")
+                    .append(Doc::text(" "))
+                    .append(Doc::text(name))
+                    .append(Doc::text(":"))
+                    .append(info.to_doc())
+            }
+            DefModule::ExtModule(info, name, _, defname, _) => {
+                Doc::text("extmodule")
+                    .append(Doc::text(" "))
+                    .append(Doc::text(name))
+                    .append(Doc::text(":"))
+                    .append(info.to_doc())
+                    .append(Doc::newline())
+                    .append(Doc::text("  defname = "))
+                    .append(Doc::text(defname))
+            }
+        }
+    }
 }
 
 pub enum DefCircuit {
@@ -271,7 +285,7 @@ pub enum DefCircuit {
 impl ToDoc for DefCircuit {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            DefCircuit::Circuit(info, modules, main) => {
+            DefCircuit::Circuit(info, _, main) => {
                 Doc::text("circuit ")
                     .append(Doc::text(main))
                     .append(Doc::text(" :"))
@@ -280,12 +294,6 @@ impl ToDoc for DefCircuit {
         }
     }
 }
-
-// impl ToDoc for Module {
-//     fn to_doc(&self) -> Doc<BoxDoc<()>> {
-//         Doc::text("module")
-//     }
-// }
 
 #[cfg(test)]
 mod test{
@@ -435,6 +443,12 @@ mod test{
         let d = Output;
         let t = Vector(Rc::new(UInt(32)), 8);
         assert_eq!(Port(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
+    }
+
+    #[test]
+    fn test_extmodule_empty() {
+        let exp = "extmodule foo:\n  defname = bar";
+        assert_eq!(ExtModule(NoInfo, "foo".into(), vec![], "bar".into(), vec![]).to_pretty(), exp);
     }
 
     #[test]
