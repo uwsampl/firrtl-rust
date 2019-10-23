@@ -20,12 +20,14 @@ pub type Id = String;
 // We can probably just use
 pub enum Info {
     NoInfo,
+    FileInfo(String),
 }
 
 impl ToDoc for Info {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Info::NoInfo => Doc::text(""),
+            Info::FileInfo(info) => Doc::text(info),
         }
     }
 
@@ -126,6 +128,7 @@ impl ToDoc for Expr {
                         consts.iter().map(|i| Doc::as_string(i)),
                         Doc::text(", ")))
                     .append(Doc::text(")"))
+                    .append(Doc::space())
             }
         }
     }
@@ -140,7 +143,7 @@ impl ToDoc for Expr {
 // pub struct Module {
 //     pub id: Id,
 //     // info: Info,
-//     pub ports: Vec<Port>,
+//     pub ports: Vec<IO>,
 //     pub stmt: Vec<Stmt>,
 // }
 
@@ -158,14 +161,14 @@ impl ToDoc for Dir {
     }
 }
 
-pub enum Port {
-    Decl(Info, String, Dir, Type),
+pub enum IO {
+    Port(Info, String, Dir, Type),
 }
 
-impl ToDoc for Port {
+impl ToDoc for IO {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            Port::Decl(info, name, dir, tpe) => {
+            IO::Port(info, name, dir, tpe) => {
                 dir.to_doc()
                     .append(Doc::text(" "))
                     .append(Doc::text(name))
@@ -173,6 +176,7 @@ impl ToDoc for Port {
                     .append(Doc::text(":"))
                     .append(Doc::text(" "))
                     .append(tpe.to_doc())
+                    .append(info.to_doc())
                     .append(Doc::space())
             }
         }
@@ -292,7 +296,7 @@ mod test{
     use Expr::*;
     use PrimOp::*;
     use Dir::*;
-    use Port::*;
+    use IO::*;
 
     #[test]
     fn test_no_info() {
@@ -396,7 +400,7 @@ mod test{
         let e1 = Reference("a".into(), UInt(w));
         let e2 = Reference("b".into(), UInt(w));
         let a = vec![e1, e2];
-        assert_eq!(DoPrim(Add, a, vec![], UInt(w)).to_pretty(), "add(a, b)");
+        assert_eq!(DoPrim(Add, a, vec![], UInt(w)).to_pretty(), "add(a, b)\n");
     }
 
     #[test]
@@ -415,7 +419,7 @@ mod test{
         let n = String::from("in");
         let d = Input;
         let t = UInt(32);
-        assert_eq!(Port::Decl(i, n, d, t).to_pretty(), "input in : UInt<32>\n");
+        assert_eq!(IO::Port(i, n, d, t).to_pretty(), "input in : UInt<32>\n");
     }
 
     #[test]
@@ -424,6 +428,6 @@ mod test{
         let n = String::from("out");
         let d = Output;
         let t = Vector(Rc::new(UInt(32)), 8);
-        assert_eq!(Port::Decl(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
+        assert_eq!(IO::Port(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
     }
 }
