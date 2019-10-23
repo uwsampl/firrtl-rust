@@ -1,7 +1,7 @@
 use std::rc::Rc;
 use pretty::{Doc, BoxDoc};
 
-trait ToDoc {
+pub trait ToDoc {
     fn to_doc(&self) -> Doc<BoxDoc<()>>;
 
     fn to_pretty_with_width(&self, width: usize) -> String {
@@ -48,7 +48,7 @@ pub enum Type {
     Vector(Rc<Type>, u64),
 }
 
-impl Type {
+impl ToDoc for Type {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Type::Clock => Doc::text("Clock"),
