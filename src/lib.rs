@@ -1,25 +1,45 @@
 use std::rc::Rc;
 use pretty::{Doc, BoxDoc};
 
-pub enum Info {
-    NoInfo,
-}
+trait ToDoc {
+    fn to_doc(&self) -> Doc<BoxDoc<()>>;
 
-impl Info {
-    pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
-        match self {
-            Info::NoInfo => Doc::text(""),
-        }
-    }
-    // given that firrtl has a spec format, we should
-    // set the width accordingly? using 100 for now
-    pub fn to_pretty(&self) -> String {
-        let width: usize = 100;
+    fn to_pretty_with_width(&self, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
+
+    fn to_pretty(&self) -> String {
+        self.to_pretty_with_width(100)
+    }
 }
+
+pub type Id = String;
+
+// We can probably just use
+pub enum Info {
+    NoInfo,
+}
+
+impl ToDoc for Info {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Info::NoInfo => Doc::text(""),
+        }
+    }
+
+}
+
+// pub enum Type {
+//     UInt(Option<i64>),
+//     SInt(Option<i64>),
+//     // Fixed,
+//     Clock,
+//     Analog(Option<i64>),
+//     Bundle(Vec<Field>),
+//     Vector(Box<Type>, i64),
+// }
 
 pub enum Type {
     Clock,
@@ -29,7 +49,7 @@ pub enum Type {
 }
 
 impl Type {
-    pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Type::Clock => Doc::text("Clock"),
             Type::Reset => Doc::text("Reset"),
@@ -51,25 +71,31 @@ impl Type {
             },
         }
     }
-    // given that firrtl has a spec format, we should
-    // set the width accordingly? using 100 for now
-    pub fn to_pretty(&self) -> String {
-        let width: usize = 100;
-        let mut w = Vec::new();
-        self.to_doc().render(width, &mut w).unwrap();
-        String::from_utf8(w).unwrap()
-    }
 }
 
-enum Expr {
+pub enum Expr {
     Reference(String, Type),
     SubField(Rc<Expr>, String, Type),
     SubIndex(Rc<Expr>, u64, Type),
     SubAccess(Rc<Expr>, Rc<Expr>, Type),
 }
 
-impl Expr {
-    pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
+// pub enum Exp {
+//     UInt(u64, u64),
+//     UIntBits(u64, String),
+//     Int(u64, i64),
+//     IntBits(u64, String),
+//     Reference(Id),
+//     Subfield(Box<Expr>, Id),
+//     Subindex(Box<Expr>, i64),
+//     Subaccess(Box<Expr>, Box<Expr>),
+//     Mux(Box<Expr>, Box<Expr>, Box<Expr>),
+//     ValidIf(Box<Expr>, Box<Expr>),
+//     Primitive(PrimOp)
+// }
+
+impl ToDoc for Expr {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Expr::Reference(name, _) => Doc::text(name),
             Expr::SubField(expr, name, _) => {
@@ -91,13 +117,98 @@ impl Expr {
             },
         }
     }
-    // given that firrtl has a spec format, we should
-    // set the width accordingly? using 100 for now
-    pub fn to_pretty(&self) -> String {
-        let width: usize = 100;
-        let mut w = Vec::new();
-        self.to_doc().render(width, &mut w).unwrap();
-        String::from_utf8(w).unwrap()
+}
+
+pub struct Circuit {
+    pub id: Id,
+    // info: Info,
+    pub modules: Vec<Module>
+}
+
+pub struct Module {
+    pub id: Id,
+    // info: Info,
+    pub ports: Vec<Port>,
+    pub stmt: Vec<Stmt>,
+}
+
+pub enum Port {}
+
+pub enum Dir {
+    Input,
+    Output
+}
+
+
+pub struct Field {
+    flip: bool,
+    id: Id,
+    ty: Type,
+}
+
+pub enum Stmt {
+    Wire(Id, Type, Info),
+    Connect(Expr, Expr, Info),
+    When(Expr, Box<Stmt>, Box<Stmt>),
+    P
+}
+
+pub enum PrimOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Mod,
+    Lt,
+    LEq,
+    Gt,
+    GEq,
+    Eq,
+    NEq,
+    Pad,
+    AsUInt,
+    AsSInt,
+    AsClock,
+    Shl,
+    Shr,
+    Dshl,
+    Dshr,
+    Cvt,
+    Neg,
+    Not,
+    And,
+    Or,
+    Xor,
+    Andr,
+    Orr,
+    Xorr,
+    Cat,
+    Bits,
+    Head,
+    Tail
+}
+
+impl ToDoc for Circuit {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        let mut doc = Doc::as_string("circuit")
+            .append(Doc::space())
+            .append(Doc::text(&self.id))
+            .append(Doc::space())
+            .append(Doc::as_string(":")).group();
+
+        for module in &self.modules {
+            doc = doc.append(Doc::newline())
+                     .nest(4)
+                     .append(module.to_doc());
+        }
+
+        doc
+    }
+}
+
+impl ToDoc for Module {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        Doc::text("module")
     }
 }
 
