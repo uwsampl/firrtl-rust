@@ -4,8 +4,15 @@ pub enum Info {
     NoInfo,
 }
 
+pub enum Width {
+    IntWidth {
+        width: i32,
+    }
+}
+
 pub enum Firrtl {
-    Node(Info),
+    NodeInfo(Info),
+    NodeWidth(Width),
 }
 
 use Firrtl::*;
@@ -13,7 +20,16 @@ use Firrtl::*;
 impl Firrtl {
     pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match *self {
-            Node(Info::NoInfo) => Doc::text(""),
+            NodeInfo(Info::NoInfo) => Doc::text(""),
+            NodeWidth(Width::IntWidth{width}) => {
+                Doc::concat(
+                    vec![
+                        Doc::text("<"),
+                        Doc::as_string(width),
+                        Doc::text(">")
+                    ]
+                )
+            },
         }
     }
     // given that firrtl has a spec format, we should
@@ -32,6 +48,11 @@ mod test{
 
     #[test]
     fn test_no_info() {
-        assert_eq!(Node(Info::NoInfo).to_pretty(), "");
+        assert_eq!(NodeInfo(Info::NoInfo).to_pretty(), "");
+    }
+
+    #[test]
+    fn test_int_width() {
+        assert_eq!(NodeWidth(Width::IntWidth{width:3}).to_pretty(), "<3>");
     }
 }
