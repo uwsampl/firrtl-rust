@@ -1,11 +1,24 @@
 use std::rc::Rc;
 use pretty::{Doc, BoxDoc};
 
-pub type Info = String;
+pub enum Info {
+    NoInfo,
+}
 
-enum Dir {
-    Input,
-    Output
+impl Info {
+    pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Info::NoInfo => Doc::text(""),
+        }
+    }
+    // given that firrtl has a spec format, we should
+    // set the width accordingly? using 100 for now
+    pub fn to_pretty(&self) -> String {
+        let width: usize = 100;
+        let mut w = Vec::new();
+        self.to_doc().render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
 }
 
 pub enum Type {
@@ -15,14 +28,12 @@ pub enum Type {
     Vector(Rc<Type>, u64),
 }
 
-use Type::*;
-
 impl Type {
     pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            Clock => Doc::text("Clock"),
-            Reset => Doc::text("Reset"),
-            UInt(width) => {
+            Type::Clock => Doc::text("Clock"),
+            Type::Reset => Doc::text("Reset"),
+            Type::UInt(width) => {
                 Doc::concat(
                     vec![
                         Doc::text("UInt"),
@@ -32,7 +43,7 @@ impl Type {
                     ]
                 )
             },
-            Vector(ty, size) => {
+            Type::Vector(ty, size) => {
                 ty.to_doc()
                     .append(Doc::text("["))
                     .append(Doc::as_string(size))
@@ -50,13 +61,44 @@ impl Type {
     }
 }
 
+enum Expr {
+    Reference(String, Type),
+    SubField(Rc<Expr>, String, Type),
+    // SubIndex(Rc<Expr>, u64, Type),
+    // SubAccess(Rc<Expr>, Rc<Expr>, Type),
+}
+
+impl Expr {
+    pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Expr::Reference(name, _) => Doc::text(name),
+            Expr::SubField(expr, name, _) => {
+                expr.to_doc()
+                    .append(Doc::text("."))
+                    .append(Doc::text(name))
+            },
+        }
+    }
+    // given that firrtl has a spec format, we should
+    // set the width accordingly? using 100 for now
+    pub fn to_pretty(&self) -> String {
+        let width: usize = 100;
+        let mut w = Vec::new();
+        self.to_doc().render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
 #[cfg(test)]
 mod test{
     use super::*;
+    use Info::*;
+    use Type::*;
+    use Expr::*;
 
     #[test]
-    fn test_info() {
-        assert_eq!(Info::from("hello"), "hello");
+    fn test_no_info() {
+        assert_eq!(NoInfo.to_pretty(), "");
     }
 
     #[test]
@@ -71,11 +113,29 @@ mod test{
 
     #[test]
     fn test_uint() {
-        assert_eq!(UInt(3).to_pretty(), "UInt<3>");
+        let w = 3;
+        assert_eq!(UInt(w).to_pretty(), "UInt<3>");
     }
 
     #[test]
     fn test_vector() {
-        assert_eq!(Vector(Rc::new(UInt(3)), 10).to_pretty(), "UInt<3>[10]");
+        let t = Rc::new(UInt(3));
+        let s = 10;
+        assert_eq!(Vector(t, s).to_pretty(), "UInt<3>[10]");
+    }
+
+    #[test]
+    fn test_reference() {
+        let n = String::from("foo");
+        let t = UInt(64);
+        assert_eq!(Reference(n, t).to_pretty(), "foo");
+    }
+
+    #[test]
+    fn test_subfield() {
+        let r = Rc::new(Reference("b".into(), UInt(64)));
+        let n = String::from("n");
+        let t = UInt(32);
+        assert_eq!(SubField(r, n, t).to_pretty(), "b.n");
     }
 }
