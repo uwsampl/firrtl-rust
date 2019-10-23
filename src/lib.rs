@@ -167,12 +167,13 @@ impl ToDoc for Port {
         match self {
             Port::Decl(info, name, dir, tpe) => {
                 dir.to_doc()
-                    .append(Doc::space())
+                    .append(Doc::text(" "))
                     .append(Doc::text(name))
-                    .append(Doc::space())
+                    .append(Doc::text(" "))
                     .append(Doc::text(":"))
-                    .append(Doc::space())
+                    .append(Doc::text(" "))
                     .append(tpe.to_doc())
+                    .append(Doc::space())
             }
         }
     }
@@ -408,8 +409,21 @@ mod test{
         assert_eq!(Output.to_pretty(), "output");
     }
 
-    // #[test]
-    // fn test_port_input() {
-    //     assert_eq!(Port().to_pretty(), "output");
-    // }
+    #[test]
+    fn test_port_input() {
+        let i = NoInfo;
+        let n = String::from("in");
+        let d = Input;
+        let t = UInt(32);
+        assert_eq!(Port::Decl(i, n, d, t).to_pretty(), "input in : UInt<32>\n");
+    }
+
+    #[test]
+    fn test_port_output() {
+        let i = NoInfo;
+        let n = String::from("out");
+        let d = Output;
+        let t = Vector(Rc::new(UInt(32)), 8);
+        assert_eq!(Port::Decl(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
+    }
 }
