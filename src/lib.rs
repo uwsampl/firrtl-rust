@@ -78,6 +78,7 @@ pub enum Expr {
     SubField(Rc<Expr>, String, Type),
     SubIndex(Rc<Expr>, u64, Type),
     SubAccess(Rc<Expr>, Rc<Expr>, Type),
+    DoPrim(PrimOp, Vec<Expr>, Vec<u64>, Type),
 }
 
 // pub enum Exp {
@@ -115,6 +116,17 @@ impl ToDoc for Expr {
                     .append(e2.to_doc())
                     .append(Doc::text("]"))
             },
+            Expr::DoPrim(op, args, consts, _) => {
+                op.to_doc()
+                    .append(Doc::text("("))
+                    .append(Doc::intersperse(
+                        args.iter().map(|i| i.to_doc()),
+                        Doc::text(", ")))
+                    .append(Doc::intersperse(
+                        consts.iter().map(|i| Doc::as_string(i)),
+                        Doc::text(", ")))
+                    .append(Doc::text(")"))
+            }
         }
     }
 }
@@ -347,5 +359,14 @@ mod test{
         _test_primops(Bits, "bits");
         _test_primops(Head, "head");
         _test_primops(Tail, "tail");
+    }
+
+    #[test]
+    fn test_add() {
+        let w = 32;
+        let e1 = Reference("a".into(), UInt(w));
+        let e2 = Reference("b".into(), UInt(w));
+        let a = vec![e1, e2];
+        assert_eq!(DoPrim(Add, a, Vec::new(), UInt(w)).to_pretty(), "add(a, b)");
     }
 }
