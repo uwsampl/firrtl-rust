@@ -27,7 +27,11 @@ impl ToDoc for Info {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Info::NoInfo => Doc::text(""),
-            Info::FileInfo(info) => Doc::text(info),
+            Info::FileInfo(info) => {
+                Doc::text(" @[")
+                    .append(Doc::text(info))
+                    .append(Doc::text("]"))
+            }
         }
     }
 
@@ -305,6 +309,11 @@ mod test{
     #[test]
     fn test_no_info() {
         assert_eq!(NoInfo.to_pretty(), "");
+    }
+
+    #[test]
+    fn test_fileinfo() {
+        assert_eq!(FileInfo("FooBar".into()).to_pretty(), " @[FooBar]");
     }
 
     #[test]
