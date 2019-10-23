@@ -64,7 +64,7 @@ impl Type {
 enum Expr {
     Reference(String, Type),
     SubField(Rc<Expr>, String, Type),
-    // SubIndex(Rc<Expr>, u64, Type),
+    SubIndex(Rc<Expr>, u64, Type),
     // SubAccess(Rc<Expr>, Rc<Expr>, Type),
 }
 
@@ -76,6 +76,12 @@ impl Expr {
                 expr.to_doc()
                     .append(Doc::text("."))
                     .append(Doc::text(name))
+            },
+            Expr::SubIndex(expr, value, _) => {
+                expr.to_doc()
+                    .append(Doc::text("["))
+                    .append(Doc::as_string(value))
+                    .append(Doc::text("]"))
             },
         }
     }
@@ -133,9 +139,17 @@ mod test{
 
     #[test]
     fn test_subfield() {
-        let r = Rc::new(Reference("b".into(), UInt(64)));
+        let e = Rc::new(Reference("b".into(), UInt(64)));
         let n = String::from("n");
         let t = UInt(32);
-        assert_eq!(SubField(r, n, t).to_pretty(), "b.n");
+        assert_eq!(SubField(e, n, t).to_pretty(), "b.n");
+    }
+
+    #[test]
+    fn test_subindex() {
+        let e = Rc::new(Reference("z".into(), UInt(43)));
+        let v = 10;
+        let t = UInt(32);
+        assert_eq!(SubIndex(e, v, t).to_pretty(), "z[10]");
     }
 }
