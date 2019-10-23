@@ -1,5 +1,5 @@
 [package]
-name = "firrtl-ast"
+name = "firrtl"
 version = "0.1.0"
 authors = ["Luis Vega <vegaluis@cs.washington.edu>"]
 edition = "2018"
