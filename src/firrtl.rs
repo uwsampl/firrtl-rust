@@ -1,29 +1,20 @@
 use pretty::{Doc, BoxDoc};
 
-pub enum Info {
-    NoInfo,
+pub type Info = String;
+
+pub enum Type {
+    UInt{width: u64},
 }
 
-pub enum Width {
-    IntWidth {
-        width: i32,
-    }
-}
+use Type::*;
 
-pub enum Firrtl {
-    NodeInfo(Info),
-    NodeWidth(Width),
-}
-
-use Firrtl::*;
-
-impl Firrtl {
+impl Type {
     pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match *self {
-            NodeInfo(Info::NoInfo) => Doc::text(""),
-            NodeWidth(Width::IntWidth{width}) => {
+            UInt{width} => {
                 Doc::concat(
                     vec![
+                        Doc::text("UInt"),
                         Doc::text("<"),
                         Doc::as_string(width),
                         Doc::text(">")
@@ -47,12 +38,12 @@ mod test{
     use super::*;
 
     #[test]
-    fn test_no_info() {
-        assert_eq!(NodeInfo(Info::NoInfo).to_pretty(), "");
+    fn test_info() {
+        assert_eq!(Info::from("hello"), "hello");
     }
 
     #[test]
-    fn test_int_width() {
-        assert_eq!(NodeWidth(Width::IntWidth{width:3}).to_pretty(), "<3>");
+    fn test_uint() {
+        assert_eq!(UInt{width:3}.to_pretty(), "UInt<3>");
     }
 }
