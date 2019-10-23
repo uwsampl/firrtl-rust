@@ -1,15 +1,19 @@
 use pretty::{Doc, BoxDoc};
 
-pub enum FirrtlNode {
+pub enum Info {
     NoInfo,
 }
 
-use FirrtlNode::*;
+pub enum Firrtl {
+    Node(Info),
+}
 
-impl FirrtlNode {
+use Firrtl::*;
+
+impl Firrtl {
     pub fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match *self {
-            NoInfo => Doc::text(""),
+            Node(Info::NoInfo) => Doc::text(""),
         }
     }
     // given that firrtl has a spec format, we should
@@ -28,6 +32,6 @@ mod test{
 
     #[test]
     fn test_no_info() {
-        assert_eq!(NoInfo.to_pretty(), "");
+        assert_eq!(Node(Info::NoInfo).to_pretty(), "");
     }
 }
