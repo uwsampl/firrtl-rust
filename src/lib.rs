@@ -140,12 +140,16 @@ impl ToDoc for Expr {
 //     pub modules: Vec<Module>
 // }
 
-// pub struct Module {
-//     pub id: Id,
-//     // info: Info,
-//     pub ports: Vec<IO>,
-//     pub stmt: Vec<Stmt>,
-// }
+pub enum Param {
+    IntParam(String, i64),
+    StringParam(String, String),
+    RawParam(String, String),
+}
+
+pub enum DefModule {
+    Module(Info, String, Vec<IO>),
+    ExtModule(Info, String, Vec<IO>, Vec<Param>)
+}
 
 pub enum Dir {
     Input,
