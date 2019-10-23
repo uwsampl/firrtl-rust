@@ -131,18 +131,18 @@ impl ToDoc for Expr {
     }
 }
 
-pub struct Circuit {
-    pub id: Id,
-    // info: Info,
-    pub modules: Vec<Module>
-}
+// pub struct Circuit {
+//     pub id: Id,
+//     // info: Info,
+//     pub modules: Vec<Module>
+// }
 
-pub struct Module {
-    pub id: Id,
-    // info: Info,
-    pub ports: Vec<Port>,
-    pub stmt: Vec<Stmt>,
-}
+// pub struct Module {
+//     pub id: Id,
+//     // info: Info,
+//     pub ports: Vec<Port>,
+//     pub stmt: Vec<Stmt>,
+// }
 
 pub enum Dir {
     Input,
@@ -158,20 +158,38 @@ impl ToDoc for Dir {
     }
 }
 
-pub enum Port {}
-
-pub struct Field {
-    flip: bool,
-    id: Id,
-    ty: Type,
+pub enum Port {
+    Decl(Info, String, Dir, Type),
 }
 
-pub enum Stmt {
-    Wire(Id, Type, Info),
-    Connect(Expr, Expr, Info),
-    When(Expr, Box<Stmt>, Box<Stmt>),
-    P
+impl ToDoc for Port {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Port::Decl(info, name, dir, tpe) => {
+                dir.to_doc()
+                    .append(Doc::space())
+                    .append(Doc::text(name))
+                    .append(Doc::space())
+                    .append(Doc::text(":"))
+                    .append(Doc::space())
+                    .append(tpe.to_doc())
+            }
+        }
+    }
 }
+
+// pub struct Field {
+//     flip: bool,
+//     id: Id,
+//     ty: Type,
+// }
+
+// pub enum Stmt {
+//     Wire(Id, Type, Info),
+//     Connect(Expr, Expr, Info),
+//     When(Expr, Box<Stmt>, Box<Stmt>),
+//     P
+// }
 
 pub enum PrimOp {
     Add,
@@ -241,29 +259,29 @@ impl ToDoc for PrimOp {
     }
 }
 
-impl ToDoc for Circuit {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
-        let mut doc = Doc::as_string("circuit")
-            .append(Doc::space())
-            .append(Doc::text(&self.id))
-            .append(Doc::space())
-            .append(Doc::as_string(":")).group();
+// impl ToDoc for Circuit {
+//     fn to_doc(&self) -> Doc<BoxDoc<()>> {
+//         let mut doc = Doc::as_string("circuit")
+//             .append(Doc::space())
+//             .append(Doc::text(&self.id))
+//             .append(Doc::space())
+//             .append(Doc::as_string(":")).group();
 
-        for module in &self.modules {
-            doc = doc.append(Doc::newline())
-                     .nest(4)
-                     .append(module.to_doc());
-        }
+//         for module in &self.modules {
+//             doc = doc.append(Doc::newline())
+//                      .nest(4)
+//                      .append(module.to_doc());
+//         }
 
-        doc
-    }
-}
+//         doc
+//     }
+// }
 
-impl ToDoc for Module {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
-        Doc::text("module")
-    }
-}
+// impl ToDoc for Module {
+//     fn to_doc(&self) -> Doc<BoxDoc<()>> {
+//         Doc::text("module")
+//     }
+// }
 
 #[cfg(test)]
 mod test{
@@ -273,6 +291,7 @@ mod test{
     use Expr::*;
     use PrimOp::*;
     use Dir::*;
+    use Port::*;
 
     #[test]
     fn test_no_info() {
@@ -388,4 +407,9 @@ mod test{
     fn test_output() {
         assert_eq!(Output.to_pretty(), "output");
     }
+
+    // #[test]
+    // fn test_port_input() {
+    //     assert_eq!(Port().to_pretty(), "output");
+    // }
 }
