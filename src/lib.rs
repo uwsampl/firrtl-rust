@@ -158,17 +158,14 @@ pub enum PrimOp {
     Sub,
     Mul,
     Div,
-    Mod,
+    Rem,
     Lt,
-    LEq,
+    Leq,
     Gt,
-    GEq,
+    Geq,
     Eq,
-    NEq,
+    Neq,
     Pad,
-    AsUInt,
-    AsSInt,
-    AsClock,
     Shl,
     Shr,
     Dshl,
@@ -186,6 +183,42 @@ pub enum PrimOp {
     Bits,
     Head,
     Tail
+}
+
+impl ToDoc for PrimOp {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            PrimOp::Add => Doc::text("add"),
+            PrimOp::Sub => Doc::text("sub"),
+            PrimOp::Mul => Doc::text("mul"),
+            PrimOp::Div => Doc::text("div"),
+            PrimOp::Rem => Doc::text("rem"),
+            PrimOp::Lt => Doc::text("lt"),
+            PrimOp::Leq => Doc::text("leq"),
+            PrimOp::Gt => Doc::text("gt"),
+            PrimOp::Geq => Doc::text("geq"),
+            PrimOp::Eq => Doc::text("eq"),
+            PrimOp::Neq => Doc::text("neq"),
+            PrimOp::Pad => Doc::text("pad"),
+            PrimOp::Shl => Doc::text("shl"),
+            PrimOp::Shr => Doc::text("shr"),
+            PrimOp::Dshl => Doc::text("dshl"),
+            PrimOp::Dshr => Doc::text("dshr"),
+            PrimOp::Cvt => Doc::text("cvt"),
+            PrimOp::Neg => Doc::text("neg"),
+            PrimOp::Not => Doc::text("not"),
+            PrimOp::And => Doc::text("and"),
+            PrimOp::Or => Doc::text("or"),
+            PrimOp::Xor => Doc::text("xor"),
+            PrimOp::Andr => Doc::text("andr"),
+            PrimOp::Orr => Doc::text("orr"),
+            PrimOp::Xorr => Doc::text("xorr"),
+            PrimOp::Cat => Doc::text("cat"),
+            PrimOp::Bits => Doc::text("bits"),
+            PrimOp::Head => Doc::text("head"),
+            PrimOp::Tail => Doc::text("tail"),
+        }
+    }
 }
 
 impl ToDoc for Circuit {
@@ -218,6 +251,7 @@ mod test{
     use Info::*;
     use Type::*;
     use Expr::*;
+    use PrimOp::*;
 
     #[test]
     fn test_no_info() {
@@ -276,5 +310,42 @@ mod test{
         let e2 = Rc::new(Reference("n".into(), UInt(5)));
         let t = UInt(32);
         assert_eq!(SubAccess(e1, e2, t).to_pretty(), "in[n]");
+    }
+
+    fn _test_primops(op: PrimOp, s: &str) {
+        assert_eq!(op.to_pretty(), s);
+    }
+
+    #[test]
+    fn test_primops() {
+        _test_primops(Add, "add");
+        _test_primops(Add, "add");
+        _test_primops(Mul, "mul");
+        _test_primops(Div, "div");
+        _test_primops(Rem, "rem");
+        _test_primops(Lt, "lt");
+        _test_primops(Leq, "leq");
+        _test_primops(Gt, "gt");
+        _test_primops(Geq, "geq");
+        _test_primops(Eq, "eq");
+        _test_primops(Neq, "neq");
+        _test_primops(Pad, "pad");
+        _test_primops(Shl, "shl");
+        _test_primops(Shr, "shr");
+        _test_primops(Dshl, "dshl");
+        _test_primops(Dshr, "dshr");
+        _test_primops(Cvt, "cvt");
+        _test_primops(Neg, "neg");
+        _test_primops(Not, "not");
+        _test_primops(And, "and");
+        _test_primops(Or, "or");
+        _test_primops(Xor, "xor");
+        _test_primops(Andr, "andr");
+        _test_primops(Orr, "orr");
+        _test_primops(Xorr, "xorr");
+        _test_primops(Cat, "cat");
+        _test_primops(Bits, "bits");
+        _test_primops(Head, "head");
+        _test_primops(Tail, "tail");
     }
 }
