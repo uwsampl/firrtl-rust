@@ -15,9 +15,8 @@ pub trait ToDoc {
     }
 }
 
-pub type Id = String;
+// pub type Id = String;
 
-// We can probably just use
 pub enum Info {
     NoInfo,
     FileInfo(String),
@@ -132,27 +131,9 @@ impl ToDoc for Expr {
                         consts.iter().map(|i| Doc::as_string(i)),
                         Doc::text(", ")))
                     .append(Doc::text(")"))
-                    .append(Doc::space())
             }
         }
     }
-}
-
-// pub struct Circuit {
-//     pub id: Id,
-//     // info: Info,
-//     pub modules: Vec<Module>
-// }
-
-pub enum Param {
-    IntParam(String, i64),
-    StringParam(String, String),
-    RawParam(String, String),
-}
-
-pub enum DefModule {
-    Module(Info, String, Vec<IO>),
-    ExtModule(Info, String, Vec<IO>, Vec<Param>)
 }
 
 pub enum Dir {
@@ -169,14 +150,14 @@ impl ToDoc for Dir {
     }
 }
 
-pub enum IO {
+pub enum DefPort {
     Port(Info, String, Dir, Type),
 }
 
-impl ToDoc for IO {
+impl ToDoc for DefPort {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            IO::Port(info, name, dir, tpe) => {
+            DefPort::Port(info, name, dir, tpe) => {
                 dir.to_doc()
                     .append(Doc::text(" "))
                     .append(Doc::text(name))
@@ -272,23 +253,33 @@ impl ToDoc for PrimOp {
     }
 }
 
-// impl ToDoc for Circuit {
-//     fn to_doc(&self) -> Doc<BoxDoc<()>> {
-//         let mut doc = Doc::as_string("circuit")
-//             .append(Doc::space())
-//             .append(Doc::text(&self.id))
-//             .append(Doc::space())
-//             .append(Doc::as_string(":")).group();
+pub enum Param {
+    IntParam(String, i64),
+    StringParam(String, String),
+    RawParam(String, String),
+}
 
-//         for module in &self.modules {
-//             doc = doc.append(Doc::newline())
-//                      .nest(4)
-//                      .append(module.to_doc());
-//         }
+pub enum DefModule {
+    Module(Info, String, Vec<DefPort>),
+    ExtModule(Info, String, Vec<DefPort>, Vec<Param>)
+}
 
-//         doc
-//     }
-// }
+pub enum DefCircuit {
+    Circuit(Info, Vec<DefModule>, String),
+}
+
+impl ToDoc for DefCircuit {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            DefCircuit::Circuit(info, modules, main) => {
+                Doc::text("circuit ")
+                    .append(Doc::text(main))
+                    .append(Doc::text(" :"))
+                    .append(info.to_doc())
+            }
+        }
+    }
+}
 
 // impl ToDoc for Module {
 //     fn to_doc(&self) -> Doc<BoxDoc<()>> {
@@ -304,7 +295,9 @@ mod test{
     use Expr::*;
     use PrimOp::*;
     use Dir::*;
-    use IO::*;
+    use DefPort::*;
+    use DefModule::*;
+    use DefCircuit::*;
 
     #[test]
     fn test_no_info() {
@@ -413,7 +406,7 @@ mod test{
         let e1 = Reference("a".into(), UInt(w));
         let e2 = Reference("b".into(), UInt(w));
         let a = vec![e1, e2];
-        assert_eq!(DoPrim(Add, a, vec![], UInt(w)).to_pretty(), "add(a, b)\n");
+        assert_eq!(DoPrim(Add, a, vec![], UInt(w)).to_pretty(), "add(a, b)");
     }
 
     #[test]
@@ -432,7 +425,7 @@ mod test{
         let n = String::from("in");
         let d = Input;
         let t = UInt(32);
-        assert_eq!(IO::Port(i, n, d, t).to_pretty(), "input in : UInt<32>\n");
+        assert_eq!(Port(i, n, d, t).to_pretty(), "input in : UInt<32>\n");
     }
 
     #[test]
@@ -441,6 +434,11 @@ mod test{
         let n = String::from("out");
         let d = Output;
         let t = Vector(Rc::new(UInt(32)), 8);
-        assert_eq!(IO::Port(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
+        assert_eq!(Port(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
+    }
+
+    #[test]
+    fn test_circuit_empty() {
+        assert_eq!(Circuit(NoInfo, vec![], "top".into()).to_pretty(), "circuit top :");
     }
 }
