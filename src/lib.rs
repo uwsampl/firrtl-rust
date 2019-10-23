@@ -144,13 +144,21 @@ pub struct Module {
     pub stmt: Vec<Stmt>,
 }
 
-pub enum Port {}
-
 pub enum Dir {
     Input,
     Output
 }
 
+impl ToDoc for Dir {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Dir::Input => Doc::text("input"),
+            Dir::Output => Doc::text("output"),
+        }
+    }
+}
+
+pub enum Port {}
 
 pub struct Field {
     flip: bool,
@@ -264,6 +272,7 @@ mod test{
     use Type::*;
     use Expr::*;
     use PrimOp::*;
+    use Dir::*;
 
     #[test]
     fn test_no_info() {
@@ -367,6 +376,16 @@ mod test{
         let e1 = Reference("a".into(), UInt(w));
         let e2 = Reference("b".into(), UInt(w));
         let a = vec![e1, e2];
-        assert_eq!(DoPrim(Add, a, Vec::new(), UInt(w)).to_pretty(), "add(a, b)");
+        assert_eq!(DoPrim(Add, a, vec![], UInt(w)).to_pretty(), "add(a, b)");
+    }
+
+    #[test]
+    fn test_input() {
+        assert_eq!(Input.to_pretty(), "input");
+    }
+
+    #[test]
+    fn test_output() {
+        assert_eq!(Output.to_pretty(), "output");
     }
 }
