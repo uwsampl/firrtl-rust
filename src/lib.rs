@@ -570,25 +570,30 @@ mod tests{
 
     #[test]
     fn test_stmt_empty() {
-        assert_eq!(EmptyStmt.to_pretty(), "skip");
+        let expect = "skip";
+        assert_eq!(EmptyStmt.to_pretty(), expect);
     }
 
     #[test]
     fn test_stmt_instance() {
         let i = "a0";
         let m = "adder";
-        let e = format!("inst {} of {}", i, m);
-        assert_eq!(DefInstance(NoInfo, i.into(), m.into()).to_pretty(), e);
+        let expect = format!("inst {} of {}", i, m);
+        assert_eq!(DefInstance(NoInfo, i.into(), m.into()).to_pretty(), expect);
     }
 
     #[test]
     fn test_extmodule_empty() {
-        let e = "extmodule foo :\n  defname = bar";
-        assert_eq!(ExtModule(NoInfo, "foo".into(), vec![], "bar".into(), vec![]).to_pretty(), e);
+        let n = "foo";
+        let d = "bar";
+        let expect = format!("extmodule {} :\n  defname = {}", n, d);
+        assert_eq!(ExtModule(NoInfo, n.into(), vec![], d.into(), vec![]).to_pretty(), expect);
     }
 
     #[test]
     fn test_circuit_empty() {
-        assert_eq!(Circuit(NoInfo, vec![], "top".into()).to_pretty(), "circuit top :");
+        let n = "top";
+        let expect = format!("circuit {} :", n);
+        assert_eq!(Circuit(NoInfo, vec![], n.into()).to_pretty(), expect);
     }
 }
