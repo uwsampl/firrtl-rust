@@ -51,7 +51,11 @@ fn extmodule_one_port() {
     modules.push(ExtModule(NoInfo, ext_name.into(), eport, ver_name.into(), vec![]));
     modules.push(Module(NoInfo, mod_name.into(), port, Block(stmts)));
     let cir = Circuit(NoInfo, modules, mod_name.into());
-    let expect = format!("module {}(\n  input  [31:0] in\n);\n  wire [31:0] i_in;\n  {} {} (\n    .{}({}_{})\n  );\n  assign {}_{} = {};\nendmodule\n", mod_name, ver_name, ins_name, port_name, ins_name, port_name, ins_name, port_name, port_name);
+    let mut expect = String::new();
+    expect.push_str(&format!("module {}(\n  input  [31:0] in\n);", mod_name));
+    expect.push_str(&format!("\n  wire [31:0] {}_{};", ins_name, port_name));
+    expect.push_str(&format!("\n  {} {} (\n    .{}({}_{})\n  );", ver_name, ins_name, port_name, ins_name, port_name));
+    expect.push_str(&format!("\n  assign {}_{} = {};\nendmodule\n", ins_name, port_name, port_name));
     emit(cir, &name);
     assert_eq!(read_verilog(&name), expect);
 }
