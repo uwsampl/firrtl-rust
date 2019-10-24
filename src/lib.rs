@@ -35,6 +35,24 @@ impl ToDoc for Info {
 
 }
 
+pub enum Width {
+    UnknownWidth,
+    IntWidth(u64),
+}
+
+impl ToDoc for Width {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Width::UnknownWidth => Doc::text(""),
+            Width::IntWidth(width) => {
+                Doc::text("<")
+                    .append(Doc::as_string(width))
+                    .append(Doc::text(">"))
+            },
+        }
+    }
+}
+
 pub enum Type {
     Clock,
     Reset,
@@ -402,6 +420,7 @@ pub fn read_verilog(name: &str) -> String {
 mod tests{
     use super::*;
     use Info::*;
+    use Width::*;
     use Type::*;
     use Expr::*;
     use PrimOp::*;
@@ -414,7 +433,7 @@ mod tests{
 
     #[test]
     fn test_info_noinfo() {
-        let expect = "";
+        let expect = format!("");
         assert_eq!(NoInfo.to_pretty(), expect);
     }
 
@@ -423,6 +442,19 @@ mod tests{
         let info = "FooBar";
         let expect = format!(" @[{}]", info);
         assert_eq!(FileInfo(info.into()).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_unknown_width() {
+        let expect = format!("");
+        assert_eq!(UnknownWidth.to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_int_width() {
+        let w = 43;
+        let expect = format!("<{}>", w);
+        assert_eq!(IntWidth(w).to_pretty(), expect);
     }
 
     #[test]
