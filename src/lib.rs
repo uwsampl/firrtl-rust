@@ -296,7 +296,7 @@ impl ToDoc for DefCircuit {
 }
 
 #[cfg(test)]
-mod test{
+mod tests{
     use super::*;
     use Info::*;
     use Type::*;
