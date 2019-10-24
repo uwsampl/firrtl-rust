@@ -11,5 +11,7 @@ use DefCircuit::*;
 
 #[test]
 fn no_info() {
-    assert_eq!(NoInfo.to_pretty(), "");
+    let cir = Circuit(NoInfo, vec![], "top".into());
+    // emitFirrtl(cir, "foo.fir");
+    assert_eq!("", "");
 }

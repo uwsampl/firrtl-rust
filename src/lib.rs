@@ -265,18 +265,22 @@ pub enum DefModule {
 impl ToDoc for DefModule {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            DefModule::Module(info, name, _, _) => {
+            DefModule::Module(info, name, _, stmt) => {
                 Doc::text("module")
                     .append(Doc::text(" "))
                     .append(Doc::text(name))
-                    .append(Doc::text(":"))
+                    .append(Doc::text(" :"))
                     .append(info.to_doc())
+                    .append(Doc::newline())
+                    .append(Doc::text("    "))
+                    .append(stmt.to_doc())
+
             }
             DefModule::ExtModule(info, name, _, defname, _) => {
                 Doc::text("extmodule")
                     .append(Doc::text(" "))
                     .append(Doc::text(name))
-                    .append(Doc::text(":"))
+                    .append(Doc::text(" :"))
                     .append(info.to_doc())
                     .append(Doc::newline())
                     .append(Doc::text("  defname = "))
@@ -293,14 +297,51 @@ pub enum DefCircuit {
 impl ToDoc for DefCircuit {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            DefCircuit::Circuit(info, _, main) => {
+            DefCircuit::Circuit(info, modules, main) => {
                 Doc::text("circuit ")
                     .append(Doc::text(main))
                     .append(Doc::text(" :"))
                     .append(info.to_doc())
+                    .append(Doc::newline())
+                    .append(Doc::text("  "))
+                    .append(modules[0].to_doc())
+                    .append(Doc::newline())
             }
         }
     }
+}
+
+pub fn verilog_compiler(input: &str, output: &str) {
+    use std::io::{self, Write};
+    use std::process::Command;
+    use std::path::Path;
+    let firrtl_bin = Path::new(".").join("firrtl/utils/bin/firrtl");
+    let mut firrtl_args = Vec::new();
+    firrtl_args.push("-i");
+    firrtl_args.push(input);
+    firrtl_args.push("-o");
+    firrtl_args.push(output);
+    firrtl_args.push("-X");
+    firrtl_args.push("verilog");
+    let firrtl_cmd = Command::new(&firrtl_bin)
+                     .args(&firrtl_args)
+                     .output()
+                     .expect("failed to compile firrtl");
+    io::stdout().write_all(&firrtl_cmd.stdout).unwrap();
+    io::stderr().write_all(&firrtl_cmd.stderr).unwrap();
+    assert!(firrtl_cmd.status.success(), "failed to compile firrtl");
+}
+
+pub fn emit(cir: DefCircuit, name: &str) {
+    use std::fs::File;
+    use std::io::{BufWriter, Write};
+    let firrtl_name = format!("{}.fir", name);
+    let v_name = format!("{}.v", name);
+    let f = File::create(&firrtl_name).expect("Unable to create file");
+    let mut buf = BufWriter::new(f);
+    buf.write_all(cir.to_pretty().as_bytes()).expect("Unable to write data");
+    buf.flush();
+    verilog_compiler(&firrtl_name, &v_name);
 }
 
 #[cfg(test)]

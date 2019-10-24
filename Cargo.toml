@@ -5,4 +5,4 @@ authors = ["Luis Vega <vegaluis@cs.washington.edu>"]
 edition = "2018"
 
 [dependencies]
-pretty = "*"
+pretty = "0.5.2"
