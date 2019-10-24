@@ -242,6 +242,7 @@ impl ToDoc for PrimOp {
 pub enum Stmt {
     EmptyStmt,
     DefInstance(Info, String, String),
+    Block(Vec<Stmt>),
 }
 
 impl ToDoc for Stmt {
@@ -257,6 +258,14 @@ impl ToDoc for Stmt {
                     .append(Doc::space())
                     .append(Doc::text(module))
                     .append(info.to_doc()).group()
+            },
+            Stmt::Block(stmts) => {
+                let mut doc = Doc::text("");
+                for s in stmts {
+                    doc = doc.append(s.to_doc())
+                        .append(Doc::newline());
+                }
+                doc
             },
         }
     }
@@ -485,8 +494,8 @@ mod tests{
         assert_eq!(SubAccess(expr1, expr2, v).to_pretty(), expect);
     }
 
-    fn _test_primops(op: PrimOp, s: &str) {
-        assert_eq!(op.to_pretty(), s);
+    fn _test_primops(op: PrimOp, expect: &str) {
+        assert_eq!(op.to_pretty(), expect);
     }
 
     #[test]
@@ -570,7 +579,7 @@ mod tests{
 
     #[test]
     fn test_stmt_empty() {
-        let expect = "skip";
+        let expect = format!("{}", "skip");
         assert_eq!(EmptyStmt.to_pretty(), expect);
     }
 
@@ -583,10 +592,17 @@ mod tests{
     }
 
     #[test]
+    fn test_stmt_block() {
+        let stmts = vec![EmptyStmt, EmptyStmt];
+        let expect = format!("{}\n{}\n", "skip", "skip");
+        assert_eq!(Block(stmts).to_pretty(), expect);
+    }
+
+    #[test]
     fn test_extmodule_empty() {
         let n = "foo";
         let d = "bar";
-        let expect = format!("extmodule {} :\n  defname = {}", n, d);
+        let expect = format!("extmodule {} :\n    defname = {}", n, d);
         assert_eq!(ExtModule(NoInfo, n.into(), vec![], d.into(), vec![]).to_pretty(), expect);
     }
 
