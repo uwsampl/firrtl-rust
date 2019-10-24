@@ -266,24 +266,23 @@ impl ToDoc for DefModule {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             DefModule::Module(info, name, _, stmt) => {
-                Doc::text("module")
-                    .append(Doc::text(" "))
+                Doc::text("module ")
                     .append(Doc::text(name))
                     .append(Doc::text(" :"))
                     .append(info.to_doc())
                     .append(Doc::newline())
-                    .append(Doc::text("    "))
+                    .nest(4)
                     .append(stmt.to_doc())
 
             }
             DefModule::ExtModule(info, name, _, defname, _) => {
-                Doc::text("extmodule")
-                    .append(Doc::text(" "))
+                Doc::text("extmodule ")
                     .append(Doc::text(name))
                     .append(Doc::text(" :"))
                     .append(info.to_doc())
                     .append(Doc::newline())
-                    .append(Doc::text("  defname = "))
+                    .nest(2)
+                    .append(Doc::text("defname = "))
                     .append(Doc::text(defname))
             }
         }
@@ -304,7 +303,7 @@ impl ToDoc for DefCircuit {
                     .append(info.to_doc());
                 for m in modules {
                     doc = doc.append(Doc::newline())
-                        .append(Doc::text("  "))
+                        .nest(2)
                         .append(m.to_doc())
                         .append(Doc::newline());
                 }
