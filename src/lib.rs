@@ -241,13 +241,23 @@ impl ToDoc for PrimOp {
 
 pub enum Stmt {
     EmptyStmt,
-//    DefInstance(Info, String, String),
+    DefInstance(Info, String, String),
 }
 
 impl ToDoc for Stmt {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Stmt::EmptyStmt => Doc::text("skip"),
+            Stmt::DefInstance(info, name, module) => {
+                Doc::text("inst")
+                    .append(Doc::space())
+                    .append(Doc::text(name))
+                    .append(Doc::space())
+                    .append(Doc::text("of"))
+                    .append(Doc::space())
+                    .append(Doc::text(module))
+                    .append(info.to_doc()).group()
+            },
         }
     }
 }
@@ -527,9 +537,17 @@ mod tests{
     }
 
     #[test]
+    fn test_stmt_instance() {
+        let i = "a0";
+        let m = "adder";
+        let e = format!("inst {} of {}", i, m);
+        assert_eq!(DefInstance(NoInfo, i.into(), m.into()).to_pretty(), e);
+    }
+
+    #[test]
     fn test_extmodule_empty() {
-        let exp = "extmodule foo :\n  defname = bar";
-        assert_eq!(ExtModule(NoInfo, "foo".into(), vec![], "bar".into(), vec![]).to_pretty(), exp);
+        let e = "extmodule foo :\n  defname = bar";
+        assert_eq!(ExtModule(NoInfo, "foo".into(), vec![], "bar".into(), vec![]).to_pretty(), e);
     }
 
     #[test]
