@@ -241,6 +241,7 @@ impl ToDoc for PrimOp {
 pub enum Stmt {
     EmptyStmt,
     DefInstance(Info, String, String),
+    DefNode(Info, String, Expr),
     Block(Vec<Stmt>),
     Connect(Info, Expr, Expr),
 }
@@ -257,6 +258,16 @@ impl ToDoc for Stmt {
                     .append(Doc::text("of"))
                     .append(Doc::space())
                     .append(Doc::text(module))
+                    .append(info.to_doc()).group()
+            },
+            Stmt::DefNode(info, name, expr) => {
+                Doc::text("node")
+                    .append(Doc::space())
+                    .append(Doc::text(name))
+                    .append(Doc::space())
+                    .append(Doc::text("="))
+                    .append(Doc::space())
+                    .append(expr.to_doc())
                     .append(info.to_doc()).group()
             },
             Stmt::Block(stmts) => {
@@ -762,6 +773,15 @@ mod tests{
     fn test_stmt_empty() {
         let expect = format!("{}", "skip");
         assert_eq!(EmptyStmt.to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_stmt_node() {
+        let n = "n0";
+        let r = "a";
+        let expr = Reference(r.into(), UInt(IntWidth(32)));
+        let expect = format!("node {} = {}", n, r);
+        assert_eq!(DefNode(NoInfo, n.into(), expr).to_pretty(), expect);
     }
 
     #[test]
