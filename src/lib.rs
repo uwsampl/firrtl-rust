@@ -459,22 +459,30 @@ mod tests{
     #[test]
     fn test_subindex() {
         let i = "z";
+        let a = 10;
         let w = 32;
+        let x = 64;
         let t = UInt(w);
-        let y = 64;
-        let u = UInt(y);
-        let v = 10;
-        let expect = format!("{}[{}]", i, v);
+        let u = UInt(x);
+        let expect = format!("{}[{}]", i, a);
         let expr = Rc::new(Reference(i.into(), t));
-        assert_eq!(SubIndex(expr, v, u).to_pretty(), expect);
+        assert_eq!(SubIndex(expr, a, u).to_pretty(), expect);
     }
 
     #[test]
     fn test_subaccess() {
-        let e1 = Rc::new(Reference("in".into(), UInt(32)));
-        let e2 = Rc::new(Reference("n".into(), UInt(5)));
-        let t = UInt(32);
-        assert_eq!(SubAccess(e1, e2, t).to_pretty(), "in[n]");
+        let p = "in";
+        let i = "n";
+        let w = 32;
+        let x = 64;
+        let y = 8;
+        let t = UInt(w);
+        let u = UInt(x);
+        let v = UInt(y);
+        let expect = format!("{}[{}]", p, i);
+        let expr1 = Rc::new(Reference(p.into(), t));
+        let expr2 = Rc::new(Reference(i.into(), u));
+        assert_eq!(SubAccess(expr1, expr2, v).to_pretty(), expect);
     }
 
     fn _test_primops(op: PrimOp, s: &str) {
