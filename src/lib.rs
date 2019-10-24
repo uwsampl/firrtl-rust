@@ -25,9 +25,10 @@ impl ToDoc for Info {
         match self {
             Info::NoInfo => Doc::text(""),
             Info::FileInfo(info) => {
-                Doc::text(" @[")
+                Doc::space()
+                    .append(Doc::text("@["))
                     .append(Doc::text(info))
-                    .append(Doc::text("]"))
+                    .append(Doc::text("]")).group()
             }
         }
     }
@@ -157,14 +158,14 @@ impl ToDoc for DefPort {
         match self {
             DefPort::Port(info, name, dir, tpe) => {
                 dir.to_doc()
-                    .append(Doc::text(" "))
+                    .append(Doc::space())
                     .append(Doc::text(name))
-                    .append(Doc::text(" "))
+                    .append(Doc::space())
                     .append(Doc::text(":"))
-                    .append(Doc::text(" "))
+                    .append(Doc::space())
                     .append(tpe.to_doc())
                     .append(info.to_doc())
-                    .append(Doc::newline())
+                    .append(Doc::newline()).group()
             }
         }
     }
@@ -266,11 +267,13 @@ impl ToDoc for DefModule {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             DefModule::Module(info, name, ports, stmt) => {
-                let mut doc = Doc::text("module ")
+                let mut doc = Doc::text("module")
+                    .append(Doc::space())
                     .append(Doc::text(name))
-                    .append(Doc::text(" :"))
+                    .append(Doc::space())
+                    .append(Doc::text(":"))
                     .append(info.to_doc())
-                    .append(Doc::newline());
+                    .append(Doc::newline()).group();
                 for p in ports {
                     doc = doc.append(p.to_doc());
                 }
@@ -279,14 +282,19 @@ impl ToDoc for DefModule {
                 doc
             }
             DefModule::ExtModule(info, name, _, defname, _) => {
-                Doc::text("extmodule ")
+                Doc::text("extmodule")
+                    .append(Doc::space())
                     .append(Doc::text(name))
-                    .append(Doc::text(" :"))
+                    .append(Doc::space())
+                    .append(Doc::text(":"))
                     .append(info.to_doc())
                     .append(Doc::newline())
                     .nest(2)
-                    .append(Doc::text("defname = "))
-                    .append(Doc::text(defname))
+                    .append(Doc::text("defname"))
+                    .append(Doc::space())
+                    .append(Doc::text("="))
+                    .append(Doc::space())
+                    .append(Doc::text(defname)).group()
             }
         }
     }
@@ -300,10 +308,12 @@ impl ToDoc for DefCircuit {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             DefCircuit::Circuit(info, modules, main) => {
-                let mut doc = Doc::text("circuit ")
+                let mut doc = Doc::text("circuit")
+                    .append(Doc::space())
                     .append(Doc::text(main))
-                    .append(Doc::text(" :"))
-                    .append(info.to_doc());
+                    .append(Doc::space())
+                    .append(Doc::text(":"))
+                    .append(info.to_doc()).group();
                 for m in modules {
                     doc = doc.append(Doc::newline())
                         .nest(2)
