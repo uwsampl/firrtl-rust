@@ -58,6 +58,7 @@ pub enum Type {
     Reset,
     UnknownType,
     UInt(Width),
+    SInt(Width),
     Vector(Rc<Type>, u64),
 }
 
@@ -69,6 +70,9 @@ impl ToDoc for Type {
             Type::UnknownType => Doc::text("?"),
             Type::UInt(width) => {
                 Doc::text("UInt").append(width.to_doc())
+            },
+            Type::SInt(width) => {
+                Doc::text("SInt").append(width.to_doc())
             },
             Type::Vector(ty, size) => {
                 ty.to_doc()
@@ -475,6 +479,13 @@ mod tests{
         let w = 3;
         let expect = format!("UInt<{}>", w);
         assert_eq!(UInt(IntWidth(w)).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_type_sint() {
+        let w = 32;
+        let expect = format!("SInt<{}>", w);
+        assert_eq!(SInt(IntWidth(w)).to_pretty(), expect);
     }
 
     #[test]
