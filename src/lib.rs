@@ -403,39 +403,39 @@ mod tests{
     use DefCircuit::*;
 
     #[test]
-    fn test_no_info() {
+    fn test_info_noinfo() {
         let expect = "";
         assert_eq!(NoInfo.to_pretty(), expect);
     }
 
     #[test]
-    fn test_fileinfo() {
+    fn test_info_fileinfo() {
         let info = "FooBar";
         let expect = format!(" @[{}]", info);
         assert_eq!(FileInfo(info.into()).to_pretty(), expect);
     }
 
     #[test]
-    fn test_clock() {
+    fn test_type_clock() {
         let expect = "Clock";
         assert_eq!(Clock.to_pretty(), expect);
     }
 
     #[test]
-    fn test_reset() {
+    fn test_type_reset() {
         let expect = "Reset";
         assert_eq!(Reset.to_pretty(), expect);
     }
 
     #[test]
-    fn test_uint() {
+    fn test_type_uint() {
         let w = 3;
         let expect = format!("UInt<{}>", w);
         assert_eq!(UInt(w).to_pretty(), expect);
     }
 
     #[test]
-    fn test_vector() {
+    fn test_type_vector() {
         let s = 10;
         let w = 32;
         let t = UInt(w);
@@ -444,7 +444,7 @@ mod tests{
     }
 
     #[test]
-    fn test_reference() {
+    fn test_expr_reference() {
         let n = "foo";
         let w = 64;
         let t = UInt(w);
@@ -453,7 +453,7 @@ mod tests{
     }
 
     #[test]
-    fn test_subfield() {
+    fn test_expr_subfield() {
         let i = "b";
         let f = "n";
         let w = 32;
@@ -466,7 +466,7 @@ mod tests{
     }
 
     #[test]
-    fn test_subindex() {
+    fn test_expr_subindex() {
         let i = "z";
         let a = 10;
         let w = 32;
@@ -479,7 +479,7 @@ mod tests{
     }
 
     #[test]
-    fn test_subaccess() {
+    fn test_expr_subaccess() {
         let p = "in";
         let i = "n";
         let w = 32;
@@ -494,45 +494,157 @@ mod tests{
         assert_eq!(SubAccess(expr1, expr2, v).to_pretty(), expect);
     }
 
-    fn _test_primops(op: PrimOp, expect: &str) {
+    fn test_primops(op: PrimOp, expect: &str) {
         assert_eq!(op.to_pretty(), expect);
     }
 
     #[test]
-    fn test_primops() {
-        _test_primops(Add, "add");
-        _test_primops(Add, "add");
-        _test_primops(Mul, "mul");
-        _test_primops(Div, "div");
-        _test_primops(Rem, "rem");
-        _test_primops(Lt, "lt");
-        _test_primops(Leq, "leq");
-        _test_primops(Gt, "gt");
-        _test_primops(Geq, "geq");
-        _test_primops(Eq, "eq");
-        _test_primops(Neq, "neq");
-        _test_primops(Pad, "pad");
-        _test_primops(Shl, "shl");
-        _test_primops(Shr, "shr");
-        _test_primops(Dshl, "dshl");
-        _test_primops(Dshr, "dshr");
-        _test_primops(Cvt, "cvt");
-        _test_primops(Neg, "neg");
-        _test_primops(Not, "not");
-        _test_primops(And, "and");
-        _test_primops(Or, "or");
-        _test_primops(Xor, "xor");
-        _test_primops(Andr, "andr");
-        _test_primops(Orr, "orr");
-        _test_primops(Xorr, "xorr");
-        _test_primops(Cat, "cat");
-        _test_primops(Bits, "bits");
-        _test_primops(Head, "head");
-        _test_primops(Tail, "tail");
+    fn test_primops_add() {
+        test_primops(Add, "add");
     }
 
     #[test]
-    fn test_add() {
+    fn test_primops_sub() {
+        test_primops(Sub, "sub");
+    }
+
+    #[test]
+    fn test_primops_mul() {
+        test_primops(Mul, "mul");
+    }
+
+    #[test]
+    fn test_primops_div() {
+        test_primops(Div, "div");
+    }
+
+    #[test]
+    fn test_primops_rem() {
+        test_primops(Rem, "rem");
+    }
+
+    #[test]
+    fn test_primops_lt() {
+        test_primops(Lt, "lt");
+    }
+
+    #[test]
+    fn test_primops_leq() {
+        test_primops(Leq, "leq");
+    }
+
+    #[test]
+    fn test_primops_gt() {
+        test_primops(Gt, "gt");
+    }
+
+    #[test]
+    fn test_primops_geq() {
+        test_primops(Geq, "geq");
+    }
+
+    #[test]
+    fn test_primops_eq() {
+        test_primops(Eq, "eq");
+    }
+
+    #[test]
+    fn test_primops_neq() {
+        test_primops(Neq, "neq");
+    }
+
+    #[test]
+    fn test_primops_pad() {
+        test_primops(Pad, "pad");
+    }
+
+    #[test]
+    fn test_primops_shl() {
+        test_primops(Shl, "shl");
+    }
+
+    #[test]
+    fn test_primops_shr() {
+        test_primops(Shr, "shr");
+    }
+
+    #[test]
+    fn test_primops_dshl() {
+        test_primops(Dshl, "dshl");
+    }
+
+    #[test]
+    fn test_primops_dshr() {
+        test_primops(Dshr, "dshr");
+    }
+
+    #[test]
+    fn test_primops_cvt() {
+        test_primops(Cvt, "cvt");
+    }
+
+    #[test]
+    fn test_primops_neg() {
+        test_primops(Neg, "neg");
+    }
+
+    #[test]
+    fn test_primops_not() {
+        test_primops(Not, "not");
+    }
+
+    #[test]
+    fn test_primops_and() {
+        test_primops(And, "and");
+    }
+
+    #[test]
+    fn test_primops_or() {
+        test_primops(Or, "or");
+    }
+
+    #[test]
+    fn test_primops_xor() {
+        test_primops(Xor, "xor");
+    }
+
+    #[test]
+    fn test_primops_andr() {
+        test_primops(Andr, "andr");
+    }
+
+    #[test]
+    fn test_primops_orr() {
+        test_primops(Orr, "orr");
+    }
+
+    #[test]
+    fn test_primops_xorr() {
+        test_primops(Xorr, "xorr");
+    }
+
+    #[test]
+    fn test_primops_cat() {
+        test_primops(Cat, "cat");
+    }
+
+    #[test]
+    fn test_primops_bits() {
+        test_primops(Bits, "bits");
+    }
+
+    #[test]
+    fn test_primops_head() {
+        test_primops(Head, "head");
+    }
+
+    #[test]
+    fn test_primops_tail() {
+        test_primops(Tail, "tail");
+    }
+
+    #[test]
+    fn test_expr_primops_add() {
         let op1 = "a";
         let op2 = "b";
         let w = 32;
@@ -599,7 +711,7 @@ mod tests{
     }
 
     #[test]
-    fn test_extmodule_empty() {
+    fn test_defmodule_extmodule() {
         let n = "foo";
         let d = "bar";
         let expect = format!("extmodule {} :\n    defname = {}", n, d);
@@ -607,7 +719,14 @@ mod tests{
     }
 
     #[test]
-    fn test_circuit_empty() {
+    fn test_defmodule_module() {
+        let n = "foo";
+        let expect = format!("module {} :\n    skip", n);
+        assert_eq!(Module(NoInfo, n.into(), vec![], EmptyStmt).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_circuit() {
         let n = "top";
         let expect = format!("circuit {} :", n);
         assert_eq!(Circuit(NoInfo, vec![], n.into()).to_pretty(), expect);
