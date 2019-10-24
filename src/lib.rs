@@ -302,7 +302,7 @@ impl ToDoc for DefModule {
                 for p in ports {
                     doc = doc.append(p.to_doc());
                 }
-                    doc = doc.nest(2)
+                    doc = doc.nest(4)
                     .append(Doc::text("defname"))
                     .append(Doc::space())
                     .append(Doc::text("="))
