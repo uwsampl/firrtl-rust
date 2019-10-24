@@ -1,6 +1,7 @@
 use std::rc::Rc;
 use firrtl::*;
 use Info::*;
+use Width::*;
 use Type::*;
 use Expr::*;
 use PrimOp::*;
@@ -23,7 +24,7 @@ fn module_empty_stmt() {
 #[test]
 fn module_one_port() {
     let name = "module_one_port";
-    let port = Port(NoInfo, "in".into(), Input, UInt(32));
+    let port = Port(NoInfo, "in".into(), Input, UInt(IntWidth(32)));
     let module = Module(NoInfo, name.into(), vec![port], EmptyStmt);
     let cir = Circuit(NoInfo, vec![module], name.into());
     let expect = format!("module {}(\n  input  [31:0] in\n);\n  initial begin end\nendmodule\n", &name);
@@ -42,10 +43,10 @@ fn extmodule_one_port() {
     let w = 32;
     let mut stmts = Vec::new();
     let mut modules = Vec::new();
-    let port = vec![Port(NoInfo, port_name.into(), Input, UInt(w))];
-    let eport = vec![Port(NoInfo, port_name.into(), Input, UInt(w))];
-    let expr1 = SubField(Rc::new(Reference(ins_name.into(), UInt(w))), port_name.into(), UInt(w));
-    let expr2 = Reference(port_name.into(), UInt(w));
+    let port = vec![Port(NoInfo, port_name.into(), Input, UInt(IntWidth(w)))];
+    let eport = vec![Port(NoInfo, port_name.into(), Input, UInt(IntWidth(w)))];
+    let expr1 = SubField(Rc::new(Reference(ins_name.into(), UnknownType)), port_name.into(), UInt(IntWidth(w)));
+    let expr2 = Reference(port_name.into(), UInt(IntWidth(w)));
     stmts.push(DefInstance(NoInfo, ins_name.into(), ext_name.into()));
     stmts.push(Connect(NoInfo, expr1, expr2));
     modules.push(ExtModule(NoInfo, ext_name.into(), eport, ver_name.into(), vec![]));

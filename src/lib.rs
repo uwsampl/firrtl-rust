@@ -56,7 +56,8 @@ impl ToDoc for Width {
 pub enum Type {
     Clock,
     Reset,
-    UInt(u64),
+    UnknownType,
+    UInt(Width),
     Vector(Rc<Type>, u64),
 }
 
@@ -65,15 +66,9 @@ impl ToDoc for Type {
         match self {
             Type::Clock => Doc::text("Clock"),
             Type::Reset => Doc::text("Reset"),
+            Type::UnknownType => Doc::text("?"),
             Type::UInt(width) => {
-                Doc::concat(
-                    vec![
-                        Doc::text("UInt"),
-                        Doc::text("<"),
-                        Doc::as_string(width),
-                        Doc::text(">")
-                    ]
-                )
+                Doc::text("UInt").append(width.to_doc())
             },
             Type::Vector(ty, size) => {
                 ty.to_doc()
@@ -470,17 +465,23 @@ mod tests{
     }
 
     #[test]
+    fn test_type_unknown() {
+        let expect = "?";
+        assert_eq!(UnknownType.to_pretty(), expect);
+    }
+
+    #[test]
     fn test_type_uint() {
         let w = 3;
         let expect = format!("UInt<{}>", w);
-        assert_eq!(UInt(w).to_pretty(), expect);
+        assert_eq!(UInt(IntWidth(w)).to_pretty(), expect);
     }
 
     #[test]
     fn test_type_vector() {
         let s = 10;
         let w = 32;
-        let t = UInt(w);
+        let t = UInt(IntWidth(w));
         let expect = format!("UInt<{}>[{}]", w, s);
         assert_eq!(Vector(Rc::new(t), s).to_pretty(), expect);
     }
@@ -489,7 +490,7 @@ mod tests{
     fn test_expr_reference() {
         let n = "foo";
         let w = 64;
-        let t = UInt(w);
+        let t = UInt(IntWidth(w));
         let expect = format!("{}", n);
         assert_eq!(Reference(n.into(), t).to_pretty(), expect);
     }
@@ -499,9 +500,8 @@ mod tests{
         let i = "b";
         let f = "n";
         let w = 32;
-        let x = 64;
-        let t = UInt(w);
-        let u = UInt(x);
+        let t = UnknownType;
+        let u = UnknownType;
         let expr = Rc::new(Reference(i.into(), t));
         let expect = format!("{}.{}", i, f);
         assert_eq!(SubField(expr, f.into(), u).to_pretty(), expect);
@@ -511,10 +511,8 @@ mod tests{
     fn test_expr_subindex() {
         let i = "z";
         let a = 10;
-        let w = 32;
-        let x = 64;
-        let t = UInt(w);
-        let u = UInt(x);
+        let t = UnknownType;
+        let u = UnknownType;
         let expect = format!("{}[{}]", i, a);
         let expr = Rc::new(Reference(i.into(), t));
         assert_eq!(SubIndex(expr, a, u).to_pretty(), expect);
@@ -524,12 +522,9 @@ mod tests{
     fn test_expr_subaccess() {
         let p = "in";
         let i = "n";
-        let w = 32;
-        let x = 64;
-        let y = 8;
-        let t = UInt(w);
-        let u = UInt(x);
-        let v = UInt(y);
+        let t = UnknownType;
+        let u = UnknownType;
+        let v = UnknownType;
         let expect = format!("{}[{}]", p, i);
         let expr1 = Rc::new(Reference(p.into(), t));
         let expr2 = Rc::new(Reference(i.into(), u));
@@ -690,11 +685,11 @@ mod tests{
         let op1 = "a";
         let op2 = "b";
         let w = 32;
-        let expr1 = Reference(op1.into(), UInt(w));
-        let expr2 = Reference(op2.into(), UInt(w));
+        let expr1 = Reference(op1.into(), UInt(IntWidth(w)));
+        let expr2 = Reference(op2.into(), UInt(IntWidth(w)));
         let expr = vec![expr1, expr2];
         let expect = format!("add({}, {})", op1, op2);
-        assert_eq!(DoPrim(Add, expr, vec![], UInt(w)).to_pretty(), expect);
+        assert_eq!(DoPrim(Add, expr, vec![], UInt(IntWidth(w))).to_pretty(), expect);
     }
 
     #[test]
@@ -715,7 +710,7 @@ mod tests{
         let n = "in";
         let d = Input;
         let w = 32;
-        let t = UInt(w);
+        let t = UInt(IntWidth(w));
         let expect = format!("input {} : UInt<{}>\n", n, w);
         assert_eq!(Port(i, n.into(), d, t).to_pretty(), expect);
     }
@@ -726,7 +721,7 @@ mod tests{
         let n = "out";
         let d = Output;
         let w = 32;
-        let t = UInt(w);
+        let t = UInt(IntWidth(w));
         let expect = format!("output {} : UInt<{}>\n", n, w);
         assert_eq!(Port(i, n.into(), d, t).to_pretty(), expect);
     }
@@ -756,9 +751,8 @@ mod tests{
     fn test_stmt_connect() {
         let op1 = "a";
         let op2 = "b";
-        let w = 32;
-        let expr1 = Reference(op1.into(), UInt(w));
-        let expr2 = Reference(op2.into(), UInt(w));
+        let expr1 = Reference(op1.into(), UnknownType);
+        let expr2 = Reference(op2.into(), UnknownType);
         let expect = format!("{} <= {}", op1, op2);
         assert_eq!(Connect(NoInfo, expr1, expr2).to_pretty(), expect);
     }
