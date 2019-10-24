@@ -11,8 +11,6 @@ fn main() {
     use Stmt::*;
     use DefModule::*;
     use DefCircuit::*;
-    let module = Module(NoInfo, "top".into(), vec![], EmptyStmt);
-    let cir = Circuit(NoInfo, vec![module], "top".into());
-    println!("{}", cir.to_pretty());
-    emit(cir, "foo");
+    let cir = Circuit(NoInfo, vec![], "top".into()).to_pretty();
+    println!("{}", cir);
 }

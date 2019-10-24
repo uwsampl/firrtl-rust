@@ -298,14 +298,17 @@ impl ToDoc for DefCircuit {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             DefCircuit::Circuit(info, modules, main) => {
-                Doc::text("circuit ")
+                let mut doc = Doc::text("circuit ")
                     .append(Doc::text(main))
                     .append(Doc::text(" :"))
-                    .append(info.to_doc())
-                    .append(Doc::newline())
-                    .append(Doc::text("  "))
-                    .append(modules[0].to_doc())
-                    .append(Doc::newline())
+                    .append(info.to_doc());
+                for m in modules {
+                    doc = doc.append(Doc::newline())
+                        .append(Doc::text("  "))
+                        .append(m.to_doc())
+                        .append(Doc::newline());
+                }
+                doc
             }
         }
     }
@@ -342,6 +345,13 @@ pub fn emit(cir: DefCircuit, name: &str) {
     buf.write_all(cir.to_pretty().as_bytes()).expect("Unable to write data");
     buf.flush();
     verilog_compiler(&firrtl_name, &v_name);
+}
+
+pub fn read_verilog(name: &str) -> String {
+    use std::fs;
+    let s = fs::read_to_string(format!("{}.v", name))
+        .expect("Something went wrong reading the file");
+    s
 }
 
 #[cfg(test)]
@@ -502,7 +512,7 @@ mod tests{
 
     #[test]
     fn test_extmodule_empty() {
-        let exp = "extmodule foo:\n  defname = bar";
+        let exp = "extmodule foo :\n  defname = bar";
         assert_eq!(ExtModule(NoInfo, "foo".into(), vec![], "bar".into(), vec![]).to_pretty(), exp);
     }
 
