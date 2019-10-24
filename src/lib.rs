@@ -281,20 +281,24 @@ impl ToDoc for DefModule {
                     .append(stmt.to_doc());
                 doc
             }
-            DefModule::ExtModule(info, name, _, defname, _) => {
-                Doc::text("extmodule")
+            DefModule::ExtModule(info, name, ports, defname, _) => {
+                let mut doc = Doc::text("extmodule")
                     .append(Doc::space())
                     .append(Doc::text(name))
                     .append(Doc::space())
                     .append(Doc::text(":"))
                     .append(info.to_doc())
-                    .append(Doc::newline())
-                    .nest(2)
+                    .append(Doc::newline()).group();
+                for p in ports {
+                    doc = doc.append(p.to_doc());
+                }
+                    doc = doc.nest(2)
                     .append(Doc::text("defname"))
                     .append(Doc::space())
                     .append(Doc::text("="))
                     .append(Doc::space())
-                    .append(Doc::text(defname)).group()
+                    .append(Doc::text(defname)).group();
+                doc
             }
         }
     }
