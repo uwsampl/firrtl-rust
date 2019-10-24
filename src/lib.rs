@@ -243,6 +243,7 @@ pub enum Stmt {
     EmptyStmt,
     DefInstance(Info, String, String),
     Block(Vec<Stmt>),
+    Connect(Info, Expr, Expr),
 }
 
 impl ToDoc for Stmt {
@@ -267,6 +268,15 @@ impl ToDoc for Stmt {
                 }
                 doc
             },
+            Stmt::Connect(info, loc, expr) => {
+                Doc::text("")
+                    .append(loc.to_doc())
+                    .append(Doc::space())
+                    .append(Doc::text("<="))
+                    .append(Doc::space())
+                    .append(expr.to_doc())
+                    .append(info.to_doc()).group()
+            }
         }
     }
 }
@@ -708,6 +718,17 @@ mod tests{
         let stmts = vec![EmptyStmt, EmptyStmt];
         let expect = format!("{}\n{}\n", "skip", "skip");
         assert_eq!(Block(stmts).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_stmt_connect() {
+        let op1 = "a";
+        let op2 = "b";
+        let w = 32;
+        let expr1 = Reference(op1.into(), UInt(w));
+        let expr2 = Reference(op2.into(), UInt(w));
+        let expect = format!("{} <= {}", op1, op2);
+        assert_eq!(Connect(NoInfo, expr1, expr2).to_pretty(), expect);
     }
 
     #[test]
