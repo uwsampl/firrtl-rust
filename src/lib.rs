@@ -395,58 +395,78 @@ mod tests{
 
     #[test]
     fn test_no_info() {
-        assert_eq!(NoInfo.to_pretty(), "");
+        let expect = "";
+        assert_eq!(NoInfo.to_pretty(), expect);
     }
 
     #[test]
     fn test_fileinfo() {
-        assert_eq!(FileInfo("FooBar".into()).to_pretty(), " @[FooBar]");
+        let info = "FooBar";
+        let expect = format!(" @[{}]", info);
+        assert_eq!(FileInfo(info.into()).to_pretty(), expect);
     }
 
     #[test]
     fn test_clock() {
-        assert_eq!(Clock.to_pretty(), "Clock");
+        let expect = "Clock";
+        assert_eq!(Clock.to_pretty(), expect);
     }
 
     #[test]
     fn test_reset() {
-        assert_eq!(Reset.to_pretty(), "Reset");
+        let expect = "Reset";
+        assert_eq!(Reset.to_pretty(), expect);
     }
 
     #[test]
     fn test_uint() {
         let w = 3;
-        assert_eq!(UInt(w).to_pretty(), "UInt<3>");
+        let expect = format!("UInt<{}>", w);
+        assert_eq!(UInt(w).to_pretty(), expect);
     }
 
     #[test]
     fn test_vector() {
-        let t = Rc::new(UInt(3));
+        let w = 32;
+        let t = Rc::new(UInt(w));
         let s = 10;
-        assert_eq!(Vector(t, s).to_pretty(), "UInt<3>[10]");
+        let expect = format!("UInt<{}>[{}]", w, s);
+        assert_eq!(Vector(t, s).to_pretty(), expect);
     }
 
     #[test]
     fn test_reference() {
-        let n = String::from("foo");
-        let t = UInt(64);
-        assert_eq!(Reference(n, t).to_pretty(), "foo");
+        let w = 64;
+        let n = "foo";
+        let t = UInt(w);
+        let expect = format!("{}", n);
+        assert_eq!(Reference(n.into(), t).to_pretty(), expect);
     }
 
     #[test]
     fn test_subfield() {
-        let e = Rc::new(Reference("b".into(), UInt(64)));
-        let n = String::from("n");
-        let t = UInt(32);
-        assert_eq!(SubField(e, n, t).to_pretty(), "b.n");
+        let i = "b";
+        let f = "n";
+        let w = 32;
+        let t = UInt(w);
+        let y = 64;
+        let u = UInt(y);
+        let expr = Rc::new(Reference(i.into(), t));
+        let expect = format!("{}.{}", i, f);
+        assert_eq!(SubField(expr, f.into(), u).to_pretty(), expect);
     }
 
     #[test]
     fn test_subindex() {
-        let e = Rc::new(Reference("z".into(), UInt(43)));
+        let i = "z";
+        let w = 32;
+        let t = UInt(w);
+        let y = 64;
+        let u = UInt(y);
         let v = 10;
-        let t = UInt(32);
-        assert_eq!(SubIndex(e, v, t).to_pretty(), "z[10]");
+        let expect = format!("{}[{}]", i, v);
+        let expr = Rc::new(Reference(i.into(), t));
+        assert_eq!(SubIndex(expr, v, u).to_pretty(), expect);
     }
 
     #[test]
