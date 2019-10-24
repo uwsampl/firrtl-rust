@@ -35,16 +35,6 @@ impl ToDoc for Info {
 
 }
 
-// pub enum Type {
-//     UInt(Option<i64>),
-//     SInt(Option<i64>),
-//     // Fixed,
-//     Clock,
-//     Analog(Option<i64>),
-//     Bundle(Vec<Field>),
-//     Vector(Box<Type>, i64),
-// }
-
 pub enum Type {
     Clock,
     Reset,
@@ -84,20 +74,6 @@ pub enum Expr {
     SubAccess(Rc<Expr>, Rc<Expr>, Type),
     DoPrim(PrimOp, Vec<Expr>, Vec<u64>, Type),
 }
-
-// pub enum Exp {
-//     UInt(u64, u64),
-//     UIntBits(u64, String),
-//     Int(u64, i64),
-//     IntBits(u64, String),
-//     Reference(Id),
-//     Subfield(Box<Expr>, Id),
-//     Subindex(Box<Expr>, i64),
-//     Subaccess(Box<Expr>, Box<Expr>),
-//     Mux(Box<Expr>, Box<Expr>, Box<Expr>),
-//     ValidIf(Box<Expr>, Box<Expr>),
-//     Primitive(PrimOp)
-// }
 
 impl ToDoc for Expr {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
@@ -284,7 +260,31 @@ impl ToDoc for Stmt {
 pub enum Param {
     IntParam(String, i64),
     StringParam(String, String),
-    RawParam(String, String),
+}
+
+impl ToDoc for Param {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Param::IntParam(name, value) => {
+                Doc::text("parameter")
+                    .append(Doc::space())
+                    .append(Doc::text(name))
+                    .append(Doc::space())
+                    .append(Doc::text("="))
+                    .append(Doc::space())
+                    .append(Doc::as_string(value)).group()
+            },
+            Param::StringParam(name, value) => {
+                Doc::text("parameter")
+                    .append(Doc::space())
+                    .append(Doc::text(name))
+                    .append(Doc::space())
+                    .append(Doc::text("="))
+                    .append(Doc::space())
+                    .append(Doc::text(value)).group()
+            },
+        }
+    }
 }
 
 pub enum DefModule {
@@ -406,8 +406,9 @@ mod tests{
     use Expr::*;
     use PrimOp::*;
     use Dir::*;
-    use DefPort::*;
     use Stmt::*;
+    use Param::*;
+    use DefPort::*;
     use DefModule::*;
     use DefCircuit::*;
 
@@ -728,6 +729,22 @@ mod tests{
         let expr2 = Reference(op2.into(), UInt(w));
         let expect = format!("{} <= {}", op1, op2);
         assert_eq!(Connect(NoInfo, expr1, expr2).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_param_int() {
+        let name = "WIDTH";
+        let val = 3;
+        let expect = format!("parameter {} = {}", name, val);
+        assert_eq!(IntParam(name.into(), val).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_param_string() {
+        let name = "ADDR";
+        let val = "{32'h00, 32'h01}";
+        let expect = format!("parameter {} = {}", name, val);
+        assert_eq!(StringParam(name.into(), val.into()).to_pretty(), expect);
     }
 
     #[test]
