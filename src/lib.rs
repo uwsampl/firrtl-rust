@@ -59,6 +59,7 @@ pub enum Type {
     UnknownType,
     UInt(Width),
     SInt(Width),
+    Fixed(Width, Width),
     Vector(Rc<Type>, u64),
 }
 
@@ -73,6 +74,11 @@ impl ToDoc for Type {
             },
             Type::SInt(width) => {
                 Doc::text("SInt").append(width.to_doc())
+            },
+            Type::Fixed(width, point) => {
+                Doc::text("Fixed")
+                    .append(width.to_doc())
+                    .append(point.to_doc())
             },
             Type::Vector(ty, size) => {
                 ty.to_doc()
@@ -486,6 +492,21 @@ mod tests{
         let w = 32;
         let expect = format!("SInt<{}>", w);
         assert_eq!(SInt(IntWidth(w)).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_type_fixed_unknown_width() {
+        let w = 32;
+        let expect = format!("Fixed<{}>", w);
+        assert_eq!(Fixed(IntWidth(w), UnknownWidth).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_type_fixed() {
+        let w = 32;
+        let x = 3;
+        let expect = format!("Fixed<{}><{}>", w, x);
+        assert_eq!(Fixed(IntWidth(w), IntWidth(x)).to_pretty(), expect);
     }
 
     #[test]
