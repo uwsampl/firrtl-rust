@@ -1,5 +1,6 @@
 use std::process::Command;
 use std::path::Path;
+use std::env;
 
 fn main () {
     let firrtl = "firrtl";
@@ -14,5 +15,23 @@ fn main () {
                      .output()
                      .expect("failed to git clone firrtl");
         assert!(git.status.success(), "failed to clone firrtl");
+    }
+
+    let firrtl_jar = work_dir.join("utils/bin/firrtl.jar");
+    if !firrtl_jar.exists() {
+        // cd firrtl
+        assert!(env::set_current_dir(&work_dir).is_ok());
+        // sbt compile
+        let sbt_compile = Command::new("sbt")
+                     .args(&["compile"])
+                     .output()
+                     .expect("failed to sbt compile firrtl");
+        assert!(sbt_compile.status.success(), "failed to sbt compile firrtl");
+        // sbt assembly
+        let sbt_assembly = Command::new("sbt")
+                     .args(&["assembly"])
+                     .output()
+                     .expect("failed to sbt assembly firrtl");
+        assert!(sbt_assembly.status.success(), "failed to sbt assembly firrtl");
     }
 }
