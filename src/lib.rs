@@ -427,17 +427,17 @@ mod tests{
 
     #[test]
     fn test_vector() {
-        let w = 32;
-        let t = Rc::new(UInt(w));
         let s = 10;
+        let w = 32;
+        let t = UInt(w);
         let expect = format!("UInt<{}>[{}]", w, s);
-        assert_eq!(Vector(t, s).to_pretty(), expect);
+        assert_eq!(Vector(Rc::new(t), s).to_pretty(), expect);
     }
 
     #[test]
     fn test_reference() {
-        let w = 64;
         let n = "foo";
+        let w = 64;
         let t = UInt(w);
         let expect = format!("{}", n);
         assert_eq!(Reference(n.into(), t).to_pretty(), expect);
@@ -448,9 +448,9 @@ mod tests{
         let i = "b";
         let f = "n";
         let w = 32;
+        let x = 64;
         let t = UInt(w);
-        let y = 64;
-        let u = UInt(y);
+        let u = UInt(x);
         let expr = Rc::new(Reference(i.into(), t));
         let expect = format!("{}.{}", i, f);
         assert_eq!(SubField(expr, f.into(), u).to_pretty(), expect);
@@ -549,19 +549,23 @@ mod tests{
     #[test]
     fn test_port_input() {
         let i = NoInfo;
-        let n = String::from("in");
+        let n = "in";
         let d = Input;
-        let t = UInt(32);
-        assert_eq!(Port(i, n, d, t).to_pretty(), "input in : UInt<32>\n");
+        let w = 32;
+        let t = UInt(w);
+        let expect = format!("input {} : UInt<{}>\n", n, w);
+        assert_eq!(Port(i, n.into(), d, t).to_pretty(), expect);
     }
 
     #[test]
     fn test_port_output() {
         let i = NoInfo;
-        let n = String::from("out");
+        let n = "out";
         let d = Output;
-        let t = Vector(Rc::new(UInt(32)), 8);
-        assert_eq!(Port(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
+        let w = 32;
+        let t = UInt(w);
+        let expect = format!("output {} : UInt<{}>\n", n, w);
+        assert_eq!(Port(i, n.into(), d, t).to_pretty(), expect);
     }
 
     #[test]
