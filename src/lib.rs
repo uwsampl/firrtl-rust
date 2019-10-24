@@ -524,21 +524,26 @@ mod tests{
 
     #[test]
     fn test_add() {
+        let op1 = "a";
+        let op2 = "b";
         let w = 32;
-        let e1 = Reference("a".into(), UInt(w));
-        let e2 = Reference("b".into(), UInt(w));
-        let a = vec![e1, e2];
-        assert_eq!(DoPrim(Add, a, vec![], UInt(w)).to_pretty(), "add(a, b)");
+        let expr1 = Reference(op1.into(), UInt(w));
+        let expr2 = Reference(op2.into(), UInt(w));
+        let expr = vec![expr1, expr2];
+        let expect = format!("add({}, {})", op1, op2);
+        assert_eq!(DoPrim(Add, expr, vec![], UInt(w)).to_pretty(), expect);
     }
 
     #[test]
-    fn test_input() {
-        assert_eq!(Input.to_pretty(), "input");
+    fn test_dir_input() {
+        let expect = format!("{}", "input");
+        assert_eq!(Input.to_pretty(), expect);
     }
 
     #[test]
-    fn test_output() {
-        assert_eq!(Output.to_pretty(), "output");
+    fn test_dir_output() {
+        let expect = format!("{}", "output");
+        assert_eq!(Output.to_pretty(), expect);
     }
 
     #[test]
