@@ -265,15 +265,18 @@ pub enum DefModule {
 impl ToDoc for DefModule {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            DefModule::Module(info, name, _, stmt) => {
-                Doc::text("module ")
+            DefModule::Module(info, name, ports, stmt) => {
+                let mut doc = Doc::text("module ")
                     .append(Doc::text(name))
                     .append(Doc::text(" :"))
                     .append(info.to_doc())
-                    .append(Doc::newline())
-                    .nest(4)
-                    .append(stmt.to_doc())
-
+                    .append(Doc::newline());
+                for p in ports {
+                    doc = doc.append(p.to_doc());
+                }
+                doc = doc.nest(4)
+                    .append(stmt.to_doc());
+                doc
             }
             DefModule::ExtModule(info, name, _, defname, _) => {
                 Doc::text("extmodule ")
