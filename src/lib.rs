@@ -306,8 +306,8 @@ impl ToDoc for DefModule {
                 for p in ports {
                     doc = doc.append(p.to_doc());
                 }
-                doc = doc.nest(4)
-                    .append(stmt.to_doc());
+                doc = doc.append(stmt.to_doc())
+                    .nest(2).group();
                 doc
             }
             DefModule::ExtModule(info, name, ports, defname, _) => {
@@ -321,12 +321,12 @@ impl ToDoc for DefModule {
                 for p in ports {
                     doc = doc.append(p.to_doc());
                 }
-                    doc = doc.nest(4)
-                    .append(Doc::text("defname"))
-                    .append(Doc::space())
-                    .append(Doc::text("="))
-                    .append(Doc::space())
-                    .append(Doc::text(defname)).group();
+                    doc = doc.append(Doc::text("defname"))
+                        .append(Doc::space())
+                        .append(Doc::text("="))
+                        .append(Doc::space())
+                        .append(Doc::text(defname))
+                        .nest(2).group();
                 doc
             }
         }
@@ -349,11 +349,10 @@ impl ToDoc for DefCircuit {
                     .append(info.to_doc()).group();
                 for m in modules {
                     doc = doc.append(Doc::newline())
-                        .nest(2)
                         .append(m.to_doc())
                         .append(Doc::newline());
                 }
-                doc
+                doc.nest(2).group()
             }
         }
     }
@@ -735,14 +734,14 @@ mod tests{
     fn test_defmodule_extmodule() {
         let n = "foo";
         let d = "bar";
-        let expect = format!("extmodule {} :\n    defname = {}", n, d);
+        let expect = format!("extmodule {} :\n  defname = {}", n, d);
         assert_eq!(ExtModule(NoInfo, n.into(), vec![], d.into(), vec![]).to_pretty(), expect);
     }
 
     #[test]
     fn test_defmodule_module() {
         let n = "foo";
-        let expect = format!("module {} :\n    skip", n);
+        let expect = format!("module {} :\n  skip", n);
         assert_eq!(Module(NoInfo, n.into(), vec![], EmptyStmt).to_pretty(), expect);
     }
 
