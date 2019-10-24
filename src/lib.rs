@@ -243,6 +243,14 @@ pub enum Stmt {
 //    DefInstance(Info, String, String),
 }
 
+impl ToDoc for Stmt {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+        match self {
+            Stmt::EmptyStmt => Doc::text("skip"),
+        }
+    }
+}
+
 pub enum Param {
     IntParam(String, i64),
     StringParam(String, String),
@@ -304,6 +312,7 @@ mod tests{
     use PrimOp::*;
     use Dir::*;
     use DefPort::*;
+    use Stmt::*;
     use DefModule::*;
     use DefCircuit::*;
 
@@ -443,6 +452,11 @@ mod tests{
         let d = Output;
         let t = Vector(Rc::new(UInt(32)), 8);
         assert_eq!(Port(i, n, d, t).to_pretty(), "output out : UInt<32>[8]\n");
+    }
+
+    #[test]
+    fn test_stmt_empty() {
+        assert_eq!(EmptyStmt.to_pretty(), "skip");
     }
 
     #[test]
