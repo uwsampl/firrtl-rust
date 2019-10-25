@@ -457,7 +457,7 @@ mod tests{
     fn test_info_fileinfo() {
         let info = "FooBar";
         let expect = format!(" @[{}]", info);
-        assert_eq!(FileInfo(info.into()).to_pretty(), expect);
+        assert_eq!(FileInfo(info.to_string()).to_pretty(), expect);
     }
 
     #[test]
@@ -535,7 +535,7 @@ mod tests{
         let w = 64;
         let t = UInt(IntWidth(w));
         let expect = format!("{}", n);
-        assert_eq!(Reference(n.into(), t).to_pretty(), expect);
+        assert_eq!(Reference(n.to_string(), t).to_pretty(), expect);
     }
 
     #[test]
@@ -545,9 +545,9 @@ mod tests{
         let w = 32;
         let t = UnknownType;
         let u = UnknownType;
-        let expr = Rc::new(Reference(i.into(), t));
+        let expr = Rc::new(Reference(i.to_string(), t));
         let expect = format!("{}.{}", i, f);
-        assert_eq!(SubField(expr, f.into(), u).to_pretty(), expect);
+        assert_eq!(SubField(expr, f.to_string(), u).to_pretty(), expect);
     }
 
     #[test]
@@ -557,7 +557,7 @@ mod tests{
         let t = UnknownType;
         let u = UnknownType;
         let expect = format!("{}[{}]", i, a);
-        let expr = Rc::new(Reference(i.into(), t));
+        let expr = Rc::new(Reference(i.to_string(), t));
         assert_eq!(SubIndex(expr, a, u).to_pretty(), expect);
     }
 
@@ -569,8 +569,8 @@ mod tests{
         let u = UnknownType;
         let v = UnknownType;
         let expect = format!("{}[{}]", p, i);
-        let expr1 = Rc::new(Reference(p.into(), t));
-        let expr2 = Rc::new(Reference(i.into(), u));
+        let expr1 = Rc::new(Reference(p.to_string(), t));
+        let expr2 = Rc::new(Reference(i.to_string(), u));
         assert_eq!(SubAccess(expr1, expr2, v).to_pretty(), expect);
     }
 
@@ -728,8 +728,8 @@ mod tests{
         let op1 = "a";
         let op2 = "b";
         let w = 32;
-        let expr1 = Reference(op1.into(), UInt(IntWidth(w)));
-        let expr2 = Reference(op2.into(), UInt(IntWidth(w)));
+        let expr1 = Reference(op1.to_string(), UInt(IntWidth(w)));
+        let expr2 = Reference(op2.to_string(), UInt(IntWidth(w)));
         let expr = vec![expr1, expr2];
         let expect = format!("add({}, {})", op1, op2);
         assert_eq!(DoPrim(Add, expr, vec![], UInt(IntWidth(w))).to_pretty(), expect);
@@ -755,7 +755,7 @@ mod tests{
         let w = 32;
         let t = UInt(IntWidth(w));
         let expect = format!("input {} : UInt<{}>\n", n, w);
-        assert_eq!(Port(i, n.into(), d, t).to_pretty(), expect);
+        assert_eq!(Port(i, n.to_string(), d, t).to_pretty(), expect);
     }
 
     #[test]
@@ -766,7 +766,7 @@ mod tests{
         let w = 32;
         let t = UInt(IntWidth(w));
         let expect = format!("output {} : UInt<{}>\n", n, w);
-        assert_eq!(Port(i, n.into(), d, t).to_pretty(), expect);
+        assert_eq!(Port(i, n.to_string(), d, t).to_pretty(), expect);
     }
 
     #[test]
@@ -779,9 +779,9 @@ mod tests{
     fn test_stmt_node() {
         let n = "n0";
         let r = "a";
-        let expr = Reference(r.into(), UInt(IntWidth(32)));
+        let expr = Reference(r.to_string(), UInt(IntWidth(32)));
         let expect = format!("node {} = {}", n, r);
-        assert_eq!(DefNode(NoInfo, n.into(), expr).to_pretty(), expect);
+        assert_eq!(DefNode(NoInfo, n.to_string(), expr).to_pretty(), expect);
     }
 
     #[test]
@@ -789,7 +789,7 @@ mod tests{
         let i = "a0";
         let m = "adder";
         let expect = format!("inst {} of {}", i, m);
-        assert_eq!(DefInstance(NoInfo, i.into(), m.into()).to_pretty(), expect);
+        assert_eq!(DefInstance(NoInfo, i.to_string(), m.to_string()).to_pretty(), expect);
     }
 
     #[test]
@@ -803,8 +803,8 @@ mod tests{
     fn test_stmt_connect() {
         let op1 = "a";
         let op2 = "b";
-        let expr1 = Reference(op1.into(), UnknownType);
-        let expr2 = Reference(op2.into(), UnknownType);
+        let expr1 = Reference(op1.to_string(), UnknownType);
+        let expr2 = Reference(op2.to_string(), UnknownType);
         let expect = format!("{} <= {}", op1, op2);
         assert_eq!(Connect(NoInfo, expr1, expr2).to_pretty(), expect);
     }
@@ -814,7 +814,7 @@ mod tests{
         let name = "WIDTH";
         let val = 3;
         let expect = format!("parameter {} = {}", name, val);
-        assert_eq!(IntParam(name.into(), val).to_pretty(), expect);
+        assert_eq!(IntParam(name.to_string(), val).to_pretty(), expect);
     }
 
     #[test]
@@ -822,7 +822,7 @@ mod tests{
         let name = "ADDR";
         let val = "{32'h00, 32'h01}";
         let expect = format!("parameter {} = {}", name, val);
-        assert_eq!(StringParam(name.into(), val.into()).to_pretty(), expect);
+        assert_eq!(StringParam(name.to_string(), val.to_string()).to_pretty(), expect);
     }
 
     #[test]
@@ -830,20 +830,20 @@ mod tests{
         let n = "foo";
         let d = "bar";
         let expect = format!("extmodule {} :\n  defname = {}", n, d);
-        assert_eq!(ExtModule(NoInfo, n.into(), vec![], d.into(), vec![]).to_pretty(), expect);
+        assert_eq!(ExtModule(NoInfo, n.to_string(), vec![], d.to_string(), vec![]).to_pretty(), expect);
     }
 
     #[test]
     fn test_defmodule_module() {
         let n = "foo";
         let expect = format!("module {} :\n  skip", n);
-        assert_eq!(Module(NoInfo, n.into(), vec![], EmptyStmt).to_pretty(), expect);
+        assert_eq!(Module(NoInfo, n.to_string(), vec![], EmptyStmt).to_pretty(), expect);
     }
 
     #[test]
     fn test_circuit() {
         let n = "top";
         let expect = format!("circuit {} :", n);
-        assert_eq!(Circuit(NoInfo, vec![], n.into()).to_pretty(), expect);
+        assert_eq!(Circuit(NoInfo, vec![], n.to_string()).to_pretty(), expect);
     }
 }
