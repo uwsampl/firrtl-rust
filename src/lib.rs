@@ -1,5 +1,9 @@
 use std::rc::Rc;
 use pretty::{Doc, BoxDoc};
+use std::process::Command;
+use std::path::PathBuf;
+use std::fs::File;
+use std::io::{self, BufWriter, Write};
 
 pub trait ToDoc {
     fn to_doc(&self) -> Doc<BoxDoc<()>>;
@@ -392,17 +396,14 @@ impl ToDoc for DefCircuit {
     }
 }
 
-pub fn verilog_compiler(input: &str, output: &str) {
-    use std::io::{self, Write};
-    use std::process::Command;
-    use std::path::PathBuf;
+pub fn firrtl_compiler(fir: &str, verilog: &str) {
     let mut firrtl_bin = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     firrtl_bin.push("firrtl/utils/bin/firrtl");
     let mut firrtl_args = Vec::new();
     firrtl_args.push("-i");
-    firrtl_args.push(input);
+    firrtl_args.push(fir);
     firrtl_args.push("-o");
-    firrtl_args.push(output);
+    firrtl_args.push(verilog);
     firrtl_args.push("-X");
     firrtl_args.push("verilog");
     let firrtl_cmd = Command::new(&firrtl_bin)
@@ -414,16 +415,18 @@ pub fn verilog_compiler(input: &str, output: &str) {
     assert!(firrtl_cmd.status.success(), "failed to compile firrtl");
 }
 
-pub fn emit_verilog(cir: DefCircuit, name: &str) {
-    use std::fs::File;
-    use std::io::{BufWriter, Write};
-    let firrtl_name = format!("{}.fir", name);
-    let v_name = format!("{}.v", name);
-    let f = File::create(&firrtl_name).expect("Unable to create file");
-    let mut buf = BufWriter::new(f);
-    buf.write_all(cir.to_pretty().as_bytes()).expect("Unable to write data");
-    buf.flush();
-    verilog_compiler(&firrtl_name, &v_name);
+pub fn emit_firrtl(cir: DefCircuit, path: &str) -> std::io::Result<()>  {
+    let mut buffer = BufWriter::new(File::create(path)?);
+    buffer.write_all(cir.to_pretty().as_bytes())?;
+    buffer.flush()?;
+    Ok(())
+}
+
+pub fn emit_verilog(cir: DefCircuit, path: &str) {
+    let fpath = format!("{}.fir", path);
+    let vpath = format!("{}.v", path);
+    emit_firrtl(cir, &fpath);
+    firrtl_compiler(&fpath, &vpath);
 }
 
 pub fn read_verilog(name: &str) -> String {
