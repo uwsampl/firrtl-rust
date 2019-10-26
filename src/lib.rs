@@ -422,16 +422,25 @@ pub fn emit_firrtl(cir: DefCircuit, path: &str) -> std::io::Result<()>  {
     Ok(())
 }
 
-pub fn emit_verilog(cir: DefCircuit, path: &str) {
-    let fpath = format!("{}.fir", path);
-    let vpath = format!("{}.v", path);
+pub fn emit_verilog(cir: DefCircuit, vpath: &str) {
+    let f = std::path::Path::new(vpath);
+    let name = match f.file_stem() {
+        Some(s) => {
+            match s.to_str() {
+                Some(n) => n,
+                _ => panic!("Error"),
+            }
+        },
+        None => panic!("Error"),
+    };
+    let fpath = format!("{}.fir", name);
     emit_firrtl(cir, &fpath);
     firrtl_compiler(&fpath, &vpath);
 }
 
-pub fn read_verilog(name: &str) -> String {
+pub fn read_verilog(vpath: &str) -> String {
     use std::fs;
-    let s = fs::read_to_string(format!("{}.v", name))
+    let s = fs::read_to_string(vpath)
         .expect("Something went wrong reading the file");
     s
 }
