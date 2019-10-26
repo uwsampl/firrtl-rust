@@ -17,7 +17,7 @@ fn module_empty_stmt() {
     let module = Module(NoInfo, name.to_string(), vec![], EmptyStmt);
     let cir = Circuit(NoInfo, vec![module], name.to_string());
     let expect = format!("module {}(\n);\n  initial begin end\nendmodule\n", &name);
-    emit(cir, &name);
+    emit_verilog(cir, &name);
     assert_eq!(read_verilog(&name), expect);
 }
 
@@ -28,7 +28,7 @@ fn module_one_port() {
     let module = Module(NoInfo, name.to_string(), vec![port], EmptyStmt);
     let cir = Circuit(NoInfo, vec![module], name.to_string());
     let expect = format!("module {}(\n  input  [31:0] in\n);\n  initial begin end\nendmodule\n", &name);
-    emit(cir, &name);
+    emit_verilog(cir, &name);
     assert_eq!(read_verilog(&name), expect);
 }
 
@@ -57,6 +57,6 @@ fn extmodule_one_port() {
     expect.push_str(&format!("\n  wire [31:0] {}_{};", ins_name, port_name));
     expect.push_str(&format!("\n  {} {} (\n    .{}({}_{})\n  );", ver_name, ins_name, port_name, ins_name, port_name));
     expect.push_str(&format!("\n  assign {}_{} = {};\nendmodule\n", ins_name, port_name, port_name));
-    emit(cir, &name);
+    emit_verilog(cir, &name);
     assert_eq!(read_verilog(&name), expect);
 }

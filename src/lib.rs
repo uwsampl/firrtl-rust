@@ -414,7 +414,7 @@ pub fn verilog_compiler(input: &str, output: &str) {
     assert!(firrtl_cmd.status.success(), "failed to compile firrtl");
 }
 
-pub fn emit(cir: DefCircuit, name: &str) {
+pub fn emit_verilog(cir: DefCircuit, name: &str) {
     use std::fs::File;
     use std::io::{BufWriter, Write};
     let firrtl_name = format!("{}.fir", name);
