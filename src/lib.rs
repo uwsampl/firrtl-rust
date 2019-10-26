@@ -395,8 +395,9 @@ impl ToDoc for DefCircuit {
 pub fn verilog_compiler(input: &str, output: &str) {
     use std::io::{self, Write};
     use std::process::Command;
-    use std::path::Path;
-    let firrtl_bin = Path::new(".").join("firrtl/utils/bin/firrtl");
+    use std::path::PathBuf;
+    let mut firrtl_bin = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    firrtl_bin.push("firrtl/utils/bin/firrtl");
     let mut firrtl_args = Vec::new();
     firrtl_args.push("-i");
     firrtl_args.push(input);
