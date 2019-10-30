@@ -55,7 +55,6 @@ mod tests {
     use crate::ast::Width::*;
     use crate::ast::Type::*;
     use crate::ast::Expr::*;
-    use crate::ast::PrimOp::*;
     use crate::ast::Dir::*;
     use crate::ast::Stmt::*;
     use crate::ast::DefPort::*;

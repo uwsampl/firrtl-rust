@@ -15,6 +15,7 @@ pub trait ToDoc {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum Info {
     NoInfo,
     FileInfo(String),
@@ -35,6 +36,7 @@ impl ToDoc for Info {
 
 }
 
+#[derive(Clone, Debug)]
 pub enum Width {
     UnknownWidth,
     IntWidth(u64),
@@ -53,6 +55,7 @@ impl ToDoc for Width {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum Type {
     Clock,
     Reset,
@@ -90,6 +93,7 @@ impl ToDoc for Type {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum Expr {
     Reference(String, Type),
     SubField(Rc<Expr>, String, Type),
@@ -134,6 +138,7 @@ impl ToDoc for Expr {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum Dir {
     Input,
     Output
@@ -148,6 +153,7 @@ impl ToDoc for Dir {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum DefPort {
     Port(Info, String, Dir, Type),
 }
@@ -170,6 +176,7 @@ impl ToDoc for DefPort {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum PrimOp {
     Add,
     Sub,
@@ -238,6 +245,7 @@ impl ToDoc for PrimOp {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum Stmt {
     EmptyStmt,
     DefInstance(Info, String, String),
@@ -291,6 +299,7 @@ impl ToDoc for Stmt {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum Param {
     IntParam(String, i64),
     StringParam(String, String),
@@ -321,6 +330,7 @@ impl ToDoc for Param {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum DefModule {
     Module(Info, String, Vec<DefPort>, Stmt),
     ExtModule(Info, String, Vec<DefPort>, String, Vec<Param>)
@@ -367,6 +377,7 @@ impl ToDoc for DefModule {
     }
 }
 
+#[derive(Clone, Debug)]
 pub enum DefCircuit {
     Circuit(Info, Vec<DefModule>, String),
 }
@@ -502,7 +513,6 @@ mod tests {
     fn test_expr_subfield() {
         let i = "b";
         let f = "n";
-        let w = 32;
         let t = UnknownType;
         let u = UnknownType;
         let expr = Rc::new(Reference(i.to_string(), t));
