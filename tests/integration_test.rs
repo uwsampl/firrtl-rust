@@ -11,7 +11,7 @@ fn test_integration() {
     let module = Module(NoInfo, name.to_string(), vec![], EmptyStmt);
     let cir = Circuit(NoInfo, vec![module], name.to_string());
     let expect = format!("module {}(\n);\n  initial begin end\nendmodule\n", &name);
-    emit::verilog(cir, &path);
+    emit::verilog(&cir, &path);
     assert_eq!(read_verilog(&path), expect);
 }
 

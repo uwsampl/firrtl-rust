@@ -25,14 +25,14 @@ fn compiler(firrtl: &str, verilog: &str) {
     assert!(cmd.status.success(), "failed to compile firrtl");
 }
 
-pub fn firrtl(cir: DefCircuit, path: &str) -> std::io::Result<()>  {
+pub fn firrtl(cir: &DefCircuit, path: &str) -> std::io::Result<()>  {
     let mut buffer = BufWriter::new(File::create(path)?);
     buffer.write_all(cir.to_pretty().as_bytes())?;
     buffer.flush()?;
     Ok(())
 }
 
-pub fn verilog(cir: DefCircuit, vpath: &str) {
+pub fn verilog(cir: &DefCircuit, vpath: &str) {
     let f = std::path::Path::new(vpath);
     let name = match f.file_stem() {
         Some(s) => {
@@ -70,7 +70,7 @@ mod tests {
         let module = Module(NoInfo, name.to_string(), vec![], EmptyStmt);
         let cir = Circuit(NoInfo, vec![module], name.to_string());
         let expect = format!("module {}(\n);\n  initial begin end\nendmodule\n", &name);
-        emit::verilog(cir, &path);
+        emit::verilog(&cir, &path);
         assert_eq!(read_verilog(&path), expect);
     }
 
@@ -82,7 +82,7 @@ mod tests {
         let module = Module(NoInfo, name.to_string(), vec![port], EmptyStmt);
         let cir = Circuit(NoInfo, vec![module], name.to_string());
         let expect = format!("module {}(\n  input  [31:0] in\n);\n  initial begin end\nendmodule\n", &name);
-        emit::verilog(cir, &path);
+        emit::verilog(&cir, &path);
         assert_eq!(read_verilog(&path), expect);
     }
 
@@ -112,7 +112,7 @@ mod tests {
         expect.push_str(&format!("\n  wire [31:0] {}_{};", ins_name, port_name));
         expect.push_str(&format!("\n  {} {} (\n    .{}({}_{})\n  );", ver_name, ins_name, port_name, ins_name, port_name));
         expect.push_str(&format!("\n  assign {}_{} = {};\nendmodule\n", ins_name, port_name, port_name));
-        emit::verilog(cir, &path);
+        emit::verilog(&cir, &path);
         assert_eq!(read_verilog(&path), expect);
     }
 }
