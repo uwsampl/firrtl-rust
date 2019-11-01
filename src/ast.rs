@@ -124,15 +124,19 @@ impl ToDoc for Expr {
                     .append(Doc::text("]"))
             },
             Expr::DoPrim(op, args, consts, _) => {
-                op.to_doc()
+                let mut doc = op.to_doc()
                     .append(Doc::text("("))
                     .append(Doc::intersperse(
                         args.iter().map(|i| i.to_doc()),
-                        Doc::text(", ")))
-                    .append(Doc::intersperse(
-                        consts.iter().map(|i| Doc::as_string(i)),
-                        Doc::text(", ")))
-                    .append(Doc::text(")"))
+                        Doc::text(", ")));
+                if consts.len() > 0 {
+                    doc = doc.append(Doc::text(", "))
+                            .append(Doc::intersperse(
+                                consts.iter().map(|i| Doc::as_string(i)),
+                                Doc::text(", ")));
+                }
+                doc = doc.append(Doc::text(")"));
+                 doc
             }
         }
     }
@@ -703,6 +707,17 @@ mod tests {
         let expr = vec![expr1, expr2];
         let expect = format!("add({}, {})", op1, op2);
         assert_eq!(DoPrim(Add, expr, vec![], UInt(IntWidth(w))).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_expr_primops_bits() {
+        let op1 = "a";
+        let w = 32;
+        let l = 3;
+        let h = 5;
+        let expr = vec![Reference(op1.to_string(), UInt(IntWidth(w)))];
+        let expect = format!("bits({}, {}, {})", op1, h, l);
+        assert_eq!(DoPrim(Bits, expr, vec![h, l], UInt(IntWidth(h - l + 1))).to_pretty(), expect);
     }
 
     #[test]
