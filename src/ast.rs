@@ -210,7 +210,9 @@ pub enum PrimOp {
     Cat,
     Bits,
     Head,
-    Tail
+    Tail,
+    AsUInt,
+    AsSInt,
 }
 
 impl ToDoc for PrimOp {
@@ -245,6 +247,8 @@ impl ToDoc for PrimOp {
             PrimOp::Bits => Doc::text("bits"),
             PrimOp::Head => Doc::text("head"),
             PrimOp::Tail => Doc::text("tail"),
+            PrimOp::AsUInt => Doc::text("asUInt"),
+            PrimOp::AsSInt => Doc::text("asSInt"),
         }
     }
 }
@@ -695,6 +699,16 @@ mod tests {
     #[test]
     fn test_primops_tail() {
         test_primops(Tail, "tail");
+    }
+
+    #[test]
+    fn test_primops_as_uint() {
+        test_primops(AsUInt, "asUInt");
+    }
+
+    #[test]
+    fn test_primops_as_sint() {
+        test_primops(AsSInt, "asSInt");
     }
 
     #[test]
