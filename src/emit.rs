@@ -27,7 +27,7 @@ fn compiler(firrtl: &str, verilog: &str) {
 
 pub fn firrtl(cir: &DefCircuit, path: &str) -> std::io::Result<()>  {
     let mut buffer = BufWriter::new(File::create(path)?);
-    buffer.write_all(cir.to_pretty().as_bytes())?;
+    buffer.write_all(cir.pretty().as_bytes())?;
     buffer.flush()?;
     Ok(())
 }

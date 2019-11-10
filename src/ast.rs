@@ -1,16 +1,16 @@
 use std::rc::Rc;
 
 pub trait Doc {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>>;
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>>;
 
-    fn to_pretty_with_width(&self, width: usize) -> String {
+    fn pretty_with_width(&self, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc().render(width, &mut w).unwrap();
+        self.doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 
-    fn to_pretty(&self) -> String {
-        self.to_pretty_with_width(100)
+    fn pretty(&self) -> String {
+        self.pretty_with_width(100)
     }
 }
 
@@ -21,7 +21,7 @@ pub enum Info {
 }
 
 impl Doc for Info {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Info::NoInfo => pretty::Doc::text(""),
             Info::FileInfo(info) => {
@@ -42,7 +42,7 @@ pub enum Width {
 }
 
 impl Doc for Width {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Width::UnknownWidth => pretty::Doc::text(""),
             Width::IntWidth(width) => {
@@ -66,24 +66,24 @@ pub enum Type {
 }
 
 impl Doc for Type {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Type::Clock => pretty::Doc::text("Clock"),
             Type::Reset => pretty::Doc::text("Reset"),
             Type::UnknownType => pretty::Doc::text("?"),
             Type::UInt(width) => {
-                pretty::Doc::text("UInt").append(width.to_doc())
+                pretty::Doc::text("UInt").append(width.doc())
             },
             Type::SInt(width) => {
-                pretty::Doc::text("SInt").append(width.to_doc())
+                pretty::Doc::text("SInt").append(width.doc())
             },
             Type::Fixed(width, point) => {
                 pretty::Doc::text("Fixed")
-                    .append(width.to_doc())
-                    .append(point.to_doc())
+                    .append(width.doc())
+                    .append(point.doc())
             },
             Type::Vector(ty, size) => {
-                ty.to_doc()
+                ty.doc()
                     .append(pretty::Doc::text("["))
                     .append(pretty::Doc::as_string(size))
                     .append(pretty::Doc::text("]"))
@@ -102,31 +102,31 @@ pub enum Expr {
 }
 
 impl Doc for Expr {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Expr::Reference(name, _) => pretty::Doc::text(name),
             Expr::SubField(expr, name, _) => {
-                expr.to_doc()
+                expr.doc()
                     .append(pretty::Doc::text("."))
                     .append(pretty::Doc::text(name))
             },
             Expr::SubIndex(expr, value, _) => {
-                expr.to_doc()
+                expr.doc()
                     .append(pretty::Doc::text("["))
                     .append(pretty::Doc::as_string(value))
                     .append(pretty::Doc::text("]"))
             },
             Expr::SubAccess(e1, e2, _) => {
-                e1.to_doc()
+                e1.doc()
                     .append(pretty::Doc::text("["))
-                    .append(e2.to_doc())
+                    .append(e2.doc())
                     .append(pretty::Doc::text("]"))
             },
             Expr::DoPrim(op, args, consts, _) => {
-                let mut doc = op.to_doc()
+                let mut doc = op.doc()
                     .append(pretty::Doc::text("("))
                     .append(pretty::Doc::intersperse(
-                        args.iter().map(|i| i.to_doc()),
+                        args.iter().map(|i| i.doc()),
                         pretty::Doc::text(", ")));
                 if consts.len() > 0 {
                     doc = doc.append(pretty::Doc::text(", "))
@@ -148,7 +148,7 @@ pub enum Dir {
 }
 
 impl Doc for Dir {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Dir::Input => pretty::Doc::text("input"),
             Dir::Output => pretty::Doc::text("output"),
@@ -162,17 +162,17 @@ pub enum DefPort {
 }
 
 impl Doc for DefPort {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             DefPort::Port(info, name, dir, tpe) => {
-                dir.to_doc()
+                dir.doc()
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text(name))
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text(":"))
                     .append(pretty::Doc::space())
-                    .append(tpe.to_doc())
-                    .append(info.to_doc())
+                    .append(tpe.doc())
+                    .append(info.doc())
                     .append(pretty::Doc::newline()).group()
             }
         }
@@ -215,7 +215,7 @@ pub enum PrimOp {
 }
 
 impl Doc for PrimOp {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             PrimOp::Add => pretty::Doc::text("add"),
             PrimOp::Sub => pretty::Doc::text("sub"),
@@ -262,7 +262,7 @@ pub enum Stmt {
 }
 
 impl Doc for Stmt {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Stmt::EmptyStmt => pretty::Doc::text("skip"),
             Stmt::DefInstance(info, name, module) => {
@@ -273,7 +273,7 @@ impl Doc for Stmt {
                     .append(pretty::Doc::text("of"))
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text(module))
-                    .append(info.to_doc()).group()
+                    .append(info.doc()).group()
             },
             Stmt::DefNode(info, name, expr) => {
                 pretty::Doc::text("node")
@@ -282,25 +282,25 @@ impl Doc for Stmt {
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text("="))
                     .append(pretty::Doc::space())
-                    .append(expr.to_doc())
-                    .append(info.to_doc()).group()
+                    .append(expr.doc())
+                    .append(info.doc()).group()
             },
             Stmt::Block(stmts) => {
                 let mut doc = pretty::Doc::text("");
                 for s in stmts {
-                    doc = doc.append(s.to_doc())
+                    doc = doc.append(s.doc())
                         .append(pretty::Doc::newline());
                 }
                 doc
             },
             Stmt::Connect(info, loc, expr) => {
                 pretty::Doc::text("")
-                    .append(loc.to_doc())
+                    .append(loc.doc())
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text("<="))
                     .append(pretty::Doc::space())
-                    .append(expr.to_doc())
-                    .append(info.to_doc()).group()
+                    .append(expr.doc())
+                    .append(info.doc()).group()
             }
         }
     }
@@ -313,7 +313,7 @@ pub enum Param {
 }
 
 impl Doc for Param {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Param::IntParam(name, value) => {
                 pretty::Doc::text("parameter")
@@ -344,7 +344,7 @@ pub enum DefModule {
 }
 
 impl Doc for DefModule {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             DefModule::Module(info, name, ports, stmt) => {
                 let mut doc = pretty::Doc::text("module")
@@ -352,12 +352,12 @@ impl Doc for DefModule {
                     .append(pretty::Doc::text(name))
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text(":"))
-                    .append(info.to_doc())
+                    .append(info.doc())
                     .append(pretty::Doc::newline()).group();
                 for p in ports {
-                    doc = doc.append(p.to_doc());
+                    doc = doc.append(p.doc());
                 }
-                doc = doc.append(stmt.to_doc())
+                doc = doc.append(stmt.doc())
                     .nest(2).group();
                 doc
             }
@@ -367,10 +367,10 @@ impl Doc for DefModule {
                     .append(pretty::Doc::text(name))
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text(":"))
-                    .append(info.to_doc())
+                    .append(info.doc())
                     .append(pretty::Doc::newline()).group();
                 for p in ports {
-                    doc = doc.append(p.to_doc());
+                    doc = doc.append(p.doc());
                 }
                     doc = doc.append(pretty::Doc::text("defname"))
                         .append(pretty::Doc::space())
@@ -390,7 +390,7 @@ pub enum DefCircuit {
 }
 
 impl Doc for DefCircuit {
-    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
+    fn doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             DefCircuit::Circuit(info, modules, main) => {
                 let mut doc = pretty::Doc::text("circuit")
@@ -398,10 +398,10 @@ impl Doc for DefCircuit {
                     .append(pretty::Doc::text(main))
                     .append(pretty::Doc::space())
                     .append(pretty::Doc::text(":"))
-                    .append(info.to_doc()).group();
+                    .append(info.doc()).group();
                 for m in modules {
                     doc = doc.append(pretty::Doc::newline())
-                        .append(m.to_doc())
+                        .append(m.doc())
                         .append(pretty::Doc::newline());
                 }
                 doc.nest(2).group()
@@ -428,66 +428,66 @@ mod tests {
     #[test]
     fn test_info_noinfo() {
         let expect = format!("");
-        assert_eq!(NoInfo.to_pretty(), expect);
+        assert_eq!(NoInfo.pretty(), expect);
     }
 
     #[test]
     fn test_info_fileinfo() {
         let info = "FooBar";
         let expect = format!(" @[{}]", info);
-        assert_eq!(FileInfo(info.to_string()).to_pretty(), expect);
+        assert_eq!(FileInfo(info.to_string()).pretty(), expect);
     }
 
     #[test]
     fn test_unknown_width() {
         let expect = format!("");
-        assert_eq!(UnknownWidth.to_pretty(), expect);
+        assert_eq!(UnknownWidth.pretty(), expect);
     }
 
     #[test]
     fn test_int_width() {
         let w = 43;
         let expect = format!("<{}>", w);
-        assert_eq!(IntWidth(w).to_pretty(), expect);
+        assert_eq!(IntWidth(w).pretty(), expect);
     }
 
     #[test]
     fn test_type_clock() {
         let expect = "Clock";
-        assert_eq!(Clock.to_pretty(), expect);
+        assert_eq!(Clock.pretty(), expect);
     }
 
     #[test]
     fn test_type_reset() {
         let expect = "Reset";
-        assert_eq!(Reset.to_pretty(), expect);
+        assert_eq!(Reset.pretty(), expect);
     }
 
     #[test]
     fn test_type_unknown() {
         let expect = "?";
-        assert_eq!(UnknownType.to_pretty(), expect);
+        assert_eq!(UnknownType.pretty(), expect);
     }
 
     #[test]
     fn test_type_uint() {
         let w = 3;
         let expect = format!("UInt<{}>", w);
-        assert_eq!(UInt(IntWidth(w)).to_pretty(), expect);
+        assert_eq!(UInt(IntWidth(w)).pretty(), expect);
     }
 
     #[test]
     fn test_type_sint() {
         let w = 32;
         let expect = format!("SInt<{}>", w);
-        assert_eq!(SInt(IntWidth(w)).to_pretty(), expect);
+        assert_eq!(SInt(IntWidth(w)).pretty(), expect);
     }
 
     #[test]
     fn test_type_fixed_unknown_width() {
         let w = 32;
         let expect = format!("Fixed<{}>", w);
-        assert_eq!(Fixed(IntWidth(w), UnknownWidth).to_pretty(), expect);
+        assert_eq!(Fixed(IntWidth(w), UnknownWidth).pretty(), expect);
     }
 
     #[test]
@@ -495,7 +495,7 @@ mod tests {
         let w = 32;
         let x = 3;
         let expect = format!("Fixed<{}><{}>", w, x);
-        assert_eq!(Fixed(IntWidth(w), IntWidth(x)).to_pretty(), expect);
+        assert_eq!(Fixed(IntWidth(w), IntWidth(x)).pretty(), expect);
     }
 
     #[test]
@@ -504,7 +504,7 @@ mod tests {
         let w = 32;
         let t = UInt(IntWidth(w));
         let expect = format!("UInt<{}>[{}]", w, s);
-        assert_eq!(Vector(Rc::new(t), s).to_pretty(), expect);
+        assert_eq!(Vector(Rc::new(t), s).pretty(), expect);
     }
 
     #[test]
@@ -513,7 +513,7 @@ mod tests {
         let w = 64;
         let t = UInt(IntWidth(w));
         let expect = format!("{}", n);
-        assert_eq!(Reference(n.to_string(), t).to_pretty(), expect);
+        assert_eq!(Reference(n.to_string(), t).pretty(), expect);
     }
 
     #[test]
@@ -524,7 +524,7 @@ mod tests {
         let u = UnknownType;
         let expr = Rc::new(Reference(i.to_string(), t));
         let expect = format!("{}.{}", i, f);
-        assert_eq!(SubField(expr, f.to_string(), u).to_pretty(), expect);
+        assert_eq!(SubField(expr, f.to_string(), u).pretty(), expect);
     }
 
     #[test]
@@ -535,7 +535,7 @@ mod tests {
         let u = UnknownType;
         let expect = format!("{}[{}]", i, a);
         let expr = Rc::new(Reference(i.to_string(), t));
-        assert_eq!(SubIndex(expr, a, u).to_pretty(), expect);
+        assert_eq!(SubIndex(expr, a, u).pretty(), expect);
     }
 
     #[test]
@@ -548,11 +548,11 @@ mod tests {
         let expect = format!("{}[{}]", p, i);
         let expr1 = Rc::new(Reference(p.to_string(), t));
         let expr2 = Rc::new(Reference(i.to_string(), u));
-        assert_eq!(SubAccess(expr1, expr2, v).to_pretty(), expect);
+        assert_eq!(SubAccess(expr1, expr2, v).pretty(), expect);
     }
 
     fn test_primops(op: PrimOp, expect: &str) {
-        assert_eq!(op.to_pretty(), expect);
+        assert_eq!(op.pretty(), expect);
     }
 
     #[test]
@@ -719,7 +719,7 @@ mod tests {
         let expr2 = Reference(op2.to_string(), UInt(IntWidth(w)));
         let expr = vec![expr1, expr2];
         let expect = format!("add({}, {})", op1, op2);
-        assert_eq!(DoPrim(Add, expr, vec![], UInt(IntWidth(w))).to_pretty(), expect);
+        assert_eq!(DoPrim(Add, expr, vec![], UInt(IntWidth(w))).pretty(), expect);
     }
 
     #[test]
@@ -730,19 +730,19 @@ mod tests {
         let h = 5;
         let expr = vec![Reference(op1.to_string(), UInt(IntWidth(w)))];
         let expect = format!("bits({}, {}, {})", op1, h, l);
-        assert_eq!(DoPrim(Bits, expr, vec![h, l], UInt(IntWidth(h - l + 1))).to_pretty(), expect);
+        assert_eq!(DoPrim(Bits, expr, vec![h, l], UInt(IntWidth(h - l + 1))).pretty(), expect);
     }
 
     #[test]
     fn test_dir_input() {
         let expect = format!("{}", "input");
-        assert_eq!(Input.to_pretty(), expect);
+        assert_eq!(Input.pretty(), expect);
     }
 
     #[test]
     fn test_dir_output() {
         let expect = format!("{}", "output");
-        assert_eq!(Output.to_pretty(), expect);
+        assert_eq!(Output.pretty(), expect);
     }
 
     #[test]
@@ -753,7 +753,7 @@ mod tests {
         let w = 32;
         let t = UInt(IntWidth(w));
         let expect = format!("input {} : UInt<{}>\n", n, w);
-        assert_eq!(Port(i, n.to_string(), d, t).to_pretty(), expect);
+        assert_eq!(Port(i, n.to_string(), d, t).pretty(), expect);
     }
 
     #[test]
@@ -764,13 +764,13 @@ mod tests {
         let w = 32;
         let t = UInt(IntWidth(w));
         let expect = format!("output {} : UInt<{}>\n", n, w);
-        assert_eq!(Port(i, n.to_string(), d, t).to_pretty(), expect);
+        assert_eq!(Port(i, n.to_string(), d, t).pretty(), expect);
     }
 
     #[test]
     fn test_stmt_empty() {
         let expect = format!("{}", "skip");
-        assert_eq!(EmptyStmt.to_pretty(), expect);
+        assert_eq!(EmptyStmt.pretty(), expect);
     }
 
     #[test]
@@ -779,7 +779,7 @@ mod tests {
         let r = "a";
         let expr = Reference(r.to_string(), UInt(IntWidth(32)));
         let expect = format!("node {} = {}", n, r);
-        assert_eq!(DefNode(NoInfo, n.to_string(), expr).to_pretty(), expect);
+        assert_eq!(DefNode(NoInfo, n.to_string(), expr).pretty(), expect);
     }
 
     #[test]
@@ -787,14 +787,14 @@ mod tests {
         let i = "a0";
         let m = "adder";
         let expect = format!("inst {} of {}", i, m);
-        assert_eq!(DefInstance(NoInfo, i.to_string(), m.to_string()).to_pretty(), expect);
+        assert_eq!(DefInstance(NoInfo, i.to_string(), m.to_string()).pretty(), expect);
     }
 
     #[test]
     fn test_stmt_block() {
         let stmts = vec![EmptyStmt, EmptyStmt];
         let expect = format!("{}\n{}\n", "skip", "skip");
-        assert_eq!(Block(stmts).to_pretty(), expect);
+        assert_eq!(Block(stmts).pretty(), expect);
     }
 
     #[test]
@@ -804,7 +804,7 @@ mod tests {
         let expr1 = Reference(op1.to_string(), UnknownType);
         let expr2 = Reference(op2.to_string(), UnknownType);
         let expect = format!("{} <= {}", op1, op2);
-        assert_eq!(Connect(NoInfo, expr1, expr2).to_pretty(), expect);
+        assert_eq!(Connect(NoInfo, expr1, expr2).pretty(), expect);
     }
 
     #[test]
@@ -812,7 +812,7 @@ mod tests {
         let name = "WIDTH";
         let val = 3;
         let expect = format!("parameter {} = {}", name, val);
-        assert_eq!(IntParam(name.to_string(), val).to_pretty(), expect);
+        assert_eq!(IntParam(name.to_string(), val).pretty(), expect);
     }
 
     #[test]
@@ -820,7 +820,7 @@ mod tests {
         let name = "ADDR";
         let val = "{32'h00, 32'h01}";
         let expect = format!("parameter {} = {}", name, val);
-        assert_eq!(StringParam(name.to_string(), val.to_string()).to_pretty(), expect);
+        assert_eq!(StringParam(name.to_string(), val.to_string()).pretty(), expect);
     }
 
     #[test]
@@ -828,20 +828,20 @@ mod tests {
         let n = "foo";
         let d = "bar";
         let expect = format!("extmodule {} :\n  defname = {}", n, d);
-        assert_eq!(ExtModule(NoInfo, n.to_string(), vec![], d.to_string(), vec![]).to_pretty(), expect);
+        assert_eq!(ExtModule(NoInfo, n.to_string(), vec![], d.to_string(), vec![]).pretty(), expect);
     }
 
     #[test]
     fn test_defmodule_module() {
         let n = "foo";
         let expect = format!("module {} :\n  skip", n);
-        assert_eq!(Module(NoInfo, n.to_string(), vec![], EmptyStmt).to_pretty(), expect);
+        assert_eq!(Module(NoInfo, n.to_string(), vec![], EmptyStmt).pretty(), expect);
     }
 
     #[test]
     fn test_circuit() {
         let n = "top";
         let expect = format!("circuit {} :", n);
-        assert_eq!(Circuit(NoInfo, vec![], n.to_string()).to_pretty(), expect);
+        assert_eq!(Circuit(NoInfo, vec![], n.to_string()).pretty(), expect);
     }
 }
