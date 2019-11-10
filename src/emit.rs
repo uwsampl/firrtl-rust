@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write};
 
 use crate::ast::DefCircuit;
-use crate::ast::ToDoc;
+use crate::ast::Doc;
 
 fn compiler(firrtl: &str, verilog: &str) {
     let mut cmd_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -44,7 +44,7 @@ pub fn verilog(cir: &DefCircuit, vpath: &str) {
         None => panic!("Error"),
     };
     let fpath = format!("{}.fir", name);
-    firrtl(cir, &fpath);
+    firrtl(cir, &fpath).unwrap();
     compiler(&fpath, &vpath);
 }
 

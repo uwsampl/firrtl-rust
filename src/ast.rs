@@ -1,8 +1,7 @@
 use std::rc::Rc;
-use pretty::{Doc, BoxDoc};
 
-pub trait ToDoc {
-    fn to_doc(&self) -> Doc<BoxDoc<()>>;
+pub trait Doc {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>>;
 
     fn to_pretty_with_width(&self, width: usize) -> String {
         let mut w = Vec::new();
@@ -21,15 +20,15 @@ pub enum Info {
     FileInfo(String),
 }
 
-impl ToDoc for Info {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for Info {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
-            Info::NoInfo => Doc::text(""),
+            Info::NoInfo => pretty::Doc::text(""),
             Info::FileInfo(info) => {
-                Doc::space()
-                    .append(Doc::text("@["))
-                    .append(Doc::text(info))
-                    .append(Doc::text("]")).group()
+                pretty::Doc::space()
+                    .append(pretty::Doc::text("@["))
+                    .append(pretty::Doc::text(info))
+                    .append(pretty::Doc::text("]")).group()
             }
         }
     }
@@ -42,14 +41,14 @@ pub enum Width {
     IntWidth(u64),
 }
 
-impl ToDoc for Width {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for Width {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
-            Width::UnknownWidth => Doc::text(""),
+            Width::UnknownWidth => pretty::Doc::text(""),
             Width::IntWidth(width) => {
-                Doc::text("<")
-                    .append(Doc::as_string(width))
-                    .append(Doc::text(">"))
+                pretty::Doc::text("<")
+                    .append(pretty::Doc::as_string(width))
+                    .append(pretty::Doc::text(">"))
             },
         }
     }
@@ -66,28 +65,28 @@ pub enum Type {
     Vector(Rc<Type>, u64),
 }
 
-impl ToDoc for Type {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for Type {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
-            Type::Clock => Doc::text("Clock"),
-            Type::Reset => Doc::text("Reset"),
-            Type::UnknownType => Doc::text("?"),
+            Type::Clock => pretty::Doc::text("Clock"),
+            Type::Reset => pretty::Doc::text("Reset"),
+            Type::UnknownType => pretty::Doc::text("?"),
             Type::UInt(width) => {
-                Doc::text("UInt").append(width.to_doc())
+                pretty::Doc::text("UInt").append(width.to_doc())
             },
             Type::SInt(width) => {
-                Doc::text("SInt").append(width.to_doc())
+                pretty::Doc::text("SInt").append(width.to_doc())
             },
             Type::Fixed(width, point) => {
-                Doc::text("Fixed")
+                pretty::Doc::text("Fixed")
                     .append(width.to_doc())
                     .append(point.to_doc())
             },
             Type::Vector(ty, size) => {
                 ty.to_doc()
-                    .append(Doc::text("["))
-                    .append(Doc::as_string(size))
-                    .append(Doc::text("]"))
+                    .append(pretty::Doc::text("["))
+                    .append(pretty::Doc::as_string(size))
+                    .append(pretty::Doc::text("]"))
             },
         }
     }
@@ -102,40 +101,40 @@ pub enum Expr {
     DoPrim(PrimOp, Vec<Expr>, Vec<u64>, Type),
 }
 
-impl ToDoc for Expr {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for Expr {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
-            Expr::Reference(name, _) => Doc::text(name),
+            Expr::Reference(name, _) => pretty::Doc::text(name),
             Expr::SubField(expr, name, _) => {
                 expr.to_doc()
-                    .append(Doc::text("."))
-                    .append(Doc::text(name))
+                    .append(pretty::Doc::text("."))
+                    .append(pretty::Doc::text(name))
             },
             Expr::SubIndex(expr, value, _) => {
                 expr.to_doc()
-                    .append(Doc::text("["))
-                    .append(Doc::as_string(value))
-                    .append(Doc::text("]"))
+                    .append(pretty::Doc::text("["))
+                    .append(pretty::Doc::as_string(value))
+                    .append(pretty::Doc::text("]"))
             },
             Expr::SubAccess(e1, e2, _) => {
                 e1.to_doc()
-                    .append(Doc::text("["))
+                    .append(pretty::Doc::text("["))
                     .append(e2.to_doc())
-                    .append(Doc::text("]"))
+                    .append(pretty::Doc::text("]"))
             },
             Expr::DoPrim(op, args, consts, _) => {
                 let mut doc = op.to_doc()
-                    .append(Doc::text("("))
-                    .append(Doc::intersperse(
+                    .append(pretty::Doc::text("("))
+                    .append(pretty::Doc::intersperse(
                         args.iter().map(|i| i.to_doc()),
-                        Doc::text(", ")));
+                        pretty::Doc::text(", ")));
                 if consts.len() > 0 {
-                    doc = doc.append(Doc::text(", "))
-                            .append(Doc::intersperse(
-                                consts.iter().map(|i| Doc::as_string(i)),
-                                Doc::text(", ")));
+                    doc = doc.append(pretty::Doc::text(", "))
+                            .append(pretty::Doc::intersperse(
+                                consts.iter().map(|i| pretty::Doc::as_string(i)),
+                                pretty::Doc::text(", ")));
                 }
-                doc = doc.append(Doc::text(")"));
+                doc = doc.append(pretty::Doc::text(")"));
                  doc
             }
         }
@@ -148,11 +147,11 @@ pub enum Dir {
     Output
 }
 
-impl ToDoc for Dir {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for Dir {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
-            Dir::Input => Doc::text("input"),
-            Dir::Output => Doc::text("output"),
+            Dir::Input => pretty::Doc::text("input"),
+            Dir::Output => pretty::Doc::text("output"),
         }
     }
 }
@@ -162,19 +161,19 @@ pub enum DefPort {
     Port(Info, String, Dir, Type),
 }
 
-impl ToDoc for DefPort {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for DefPort {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             DefPort::Port(info, name, dir, tpe) => {
                 dir.to_doc()
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text(":"))
-                    .append(Doc::space())
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(name))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(":"))
+                    .append(pretty::Doc::space())
                     .append(tpe.to_doc())
                     .append(info.to_doc())
-                    .append(Doc::newline()).group()
+                    .append(pretty::Doc::newline()).group()
             }
         }
     }
@@ -215,40 +214,40 @@ pub enum PrimOp {
     AsSInt,
 }
 
-impl ToDoc for PrimOp {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for PrimOp {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
-            PrimOp::Add => Doc::text("add"),
-            PrimOp::Sub => Doc::text("sub"),
-            PrimOp::Mul => Doc::text("mul"),
-            PrimOp::Div => Doc::text("div"),
-            PrimOp::Rem => Doc::text("rem"),
-            PrimOp::Lt => Doc::text("lt"),
-            PrimOp::Leq => Doc::text("leq"),
-            PrimOp::Gt => Doc::text("gt"),
-            PrimOp::Geq => Doc::text("geq"),
-            PrimOp::Eq => Doc::text("eq"),
-            PrimOp::Neq => Doc::text("neq"),
-            PrimOp::Pad => Doc::text("pad"),
-            PrimOp::Shl => Doc::text("shl"),
-            PrimOp::Shr => Doc::text("shr"),
-            PrimOp::Dshl => Doc::text("dshl"),
-            PrimOp::Dshr => Doc::text("dshr"),
-            PrimOp::Cvt => Doc::text("cvt"),
-            PrimOp::Neg => Doc::text("neg"),
-            PrimOp::Not => Doc::text("not"),
-            PrimOp::And => Doc::text("and"),
-            PrimOp::Or => Doc::text("or"),
-            PrimOp::Xor => Doc::text("xor"),
-            PrimOp::Andr => Doc::text("andr"),
-            PrimOp::Orr => Doc::text("orr"),
-            PrimOp::Xorr => Doc::text("xorr"),
-            PrimOp::Cat => Doc::text("cat"),
-            PrimOp::Bits => Doc::text("bits"),
-            PrimOp::Head => Doc::text("head"),
-            PrimOp::Tail => Doc::text("tail"),
-            PrimOp::AsUInt => Doc::text("asUInt"),
-            PrimOp::AsSInt => Doc::text("asSInt"),
+            PrimOp::Add => pretty::Doc::text("add"),
+            PrimOp::Sub => pretty::Doc::text("sub"),
+            PrimOp::Mul => pretty::Doc::text("mul"),
+            PrimOp::Div => pretty::Doc::text("div"),
+            PrimOp::Rem => pretty::Doc::text("rem"),
+            PrimOp::Lt => pretty::Doc::text("lt"),
+            PrimOp::Leq => pretty::Doc::text("leq"),
+            PrimOp::Gt => pretty::Doc::text("gt"),
+            PrimOp::Geq => pretty::Doc::text("geq"),
+            PrimOp::Eq => pretty::Doc::text("eq"),
+            PrimOp::Neq => pretty::Doc::text("neq"),
+            PrimOp::Pad => pretty::Doc::text("pad"),
+            PrimOp::Shl => pretty::Doc::text("shl"),
+            PrimOp::Shr => pretty::Doc::text("shr"),
+            PrimOp::Dshl => pretty::Doc::text("dshl"),
+            PrimOp::Dshr => pretty::Doc::text("dshr"),
+            PrimOp::Cvt => pretty::Doc::text("cvt"),
+            PrimOp::Neg => pretty::Doc::text("neg"),
+            PrimOp::Not => pretty::Doc::text("not"),
+            PrimOp::And => pretty::Doc::text("and"),
+            PrimOp::Or => pretty::Doc::text("or"),
+            PrimOp::Xor => pretty::Doc::text("xor"),
+            PrimOp::Andr => pretty::Doc::text("andr"),
+            PrimOp::Orr => pretty::Doc::text("orr"),
+            PrimOp::Xorr => pretty::Doc::text("xorr"),
+            PrimOp::Cat => pretty::Doc::text("cat"),
+            PrimOp::Bits => pretty::Doc::text("bits"),
+            PrimOp::Head => pretty::Doc::text("head"),
+            PrimOp::Tail => pretty::Doc::text("tail"),
+            PrimOp::AsUInt => pretty::Doc::text("asUInt"),
+            PrimOp::AsSInt => pretty::Doc::text("asSInt"),
         }
     }
 }
@@ -262,44 +261,44 @@ pub enum Stmt {
     Connect(Info, Expr, Expr),
 }
 
-impl ToDoc for Stmt {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for Stmt {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
-            Stmt::EmptyStmt => Doc::text("skip"),
+            Stmt::EmptyStmt => pretty::Doc::text("skip"),
             Stmt::DefInstance(info, name, module) => {
-                Doc::text("inst")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("of"))
-                    .append(Doc::space())
-                    .append(Doc::text(module))
+                pretty::Doc::text("inst")
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(name))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text("of"))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(module))
                     .append(info.to_doc()).group()
             },
             Stmt::DefNode(info, name, expr) => {
-                Doc::text("node")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("="))
-                    .append(Doc::space())
+                pretty::Doc::text("node")
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(name))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text("="))
+                    .append(pretty::Doc::space())
                     .append(expr.to_doc())
                     .append(info.to_doc()).group()
             },
             Stmt::Block(stmts) => {
-                let mut doc = Doc::text("");
+                let mut doc = pretty::Doc::text("");
                 for s in stmts {
                     doc = doc.append(s.to_doc())
-                        .append(Doc::newline());
+                        .append(pretty::Doc::newline());
                 }
                 doc
             },
             Stmt::Connect(info, loc, expr) => {
-                Doc::text("")
+                pretty::Doc::text("")
                     .append(loc.to_doc())
-                    .append(Doc::space())
-                    .append(Doc::text("<="))
-                    .append(Doc::space())
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text("<="))
+                    .append(pretty::Doc::space())
                     .append(expr.to_doc())
                     .append(info.to_doc()).group()
             }
@@ -313,26 +312,26 @@ pub enum Param {
     StringParam(String, String),
 }
 
-impl ToDoc for Param {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for Param {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             Param::IntParam(name, value) => {
-                Doc::text("parameter")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("="))
-                    .append(Doc::space())
-                    .append(Doc::as_string(value)).group()
+                pretty::Doc::text("parameter")
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(name))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text("="))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::as_string(value)).group()
             },
             Param::StringParam(name, value) => {
-                Doc::text("parameter")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("="))
-                    .append(Doc::space())
-                    .append(Doc::text(value)).group()
+                pretty::Doc::text("parameter")
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(name))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text("="))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(value)).group()
             },
         }
     }
@@ -344,17 +343,17 @@ pub enum DefModule {
     ExtModule(Info, String, Vec<DefPort>, String, Vec<Param>)
 }
 
-impl ToDoc for DefModule {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for DefModule {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             DefModule::Module(info, name, ports, stmt) => {
-                let mut doc = Doc::text("module")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text(":"))
+                let mut doc = pretty::Doc::text("module")
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(name))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(":"))
                     .append(info.to_doc())
-                    .append(Doc::newline()).group();
+                    .append(pretty::Doc::newline()).group();
                 for p in ports {
                     doc = doc.append(p.to_doc());
                 }
@@ -363,21 +362,21 @@ impl ToDoc for DefModule {
                 doc
             }
             DefModule::ExtModule(info, name, ports, defname, _) => {
-                let mut doc = Doc::text("extmodule")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text(":"))
+                let mut doc = pretty::Doc::text("extmodule")
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(name))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(":"))
                     .append(info.to_doc())
-                    .append(Doc::newline()).group();
+                    .append(pretty::Doc::newline()).group();
                 for p in ports {
                     doc = doc.append(p.to_doc());
                 }
-                    doc = doc.append(Doc::text("defname"))
-                        .append(Doc::space())
-                        .append(Doc::text("="))
-                        .append(Doc::space())
-                        .append(Doc::text(defname))
+                    doc = doc.append(pretty::Doc::text("defname"))
+                        .append(pretty::Doc::space())
+                        .append(pretty::Doc::text("="))
+                        .append(pretty::Doc::space())
+                        .append(pretty::Doc::text(defname))
                         .nest(2).group();
                 doc
             }
@@ -390,20 +389,20 @@ pub enum DefCircuit {
     Circuit(Info, Vec<DefModule>, String),
 }
 
-impl ToDoc for DefCircuit {
-    fn to_doc(&self) -> Doc<BoxDoc<()>> {
+impl Doc for DefCircuit {
+    fn to_doc(&self) -> pretty::Doc<pretty::BoxDoc<()>> {
         match self {
             DefCircuit::Circuit(info, modules, main) => {
-                let mut doc = Doc::text("circuit")
-                    .append(Doc::space())
-                    .append(Doc::text(main))
-                    .append(Doc::space())
-                    .append(Doc::text(":"))
+                let mut doc = pretty::Doc::text("circuit")
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(main))
+                    .append(pretty::Doc::space())
+                    .append(pretty::Doc::text(":"))
                     .append(info.to_doc()).group();
                 for m in modules {
-                    doc = doc.append(Doc::newline())
+                    doc = doc.append(pretty::Doc::newline())
                         .append(m.to_doc())
-                        .append(Doc::newline());
+                        .append(pretty::Doc::newline());
                 }
                 doc.nest(2).group()
             }
