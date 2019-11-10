@@ -32,8 +32,8 @@ pub fn firrtl(cir: &DefCircuit, path: &str) -> std::io::Result<()>  {
     Ok(())
 }
 
-pub fn verilog(cir: &DefCircuit, vpath: &str) {
-    let f = std::path::Path::new(vpath);
+pub fn verilog(cir: &DefCircuit, path: &str) {
+    let f = std::path::Path::new(path);
     let name = match f.file_stem() {
         Some(s) => {
             match s.to_str() {
@@ -45,7 +45,7 @@ pub fn verilog(cir: &DefCircuit, vpath: &str) {
     };
     let fpath = format!("{}.fir", name);
     firrtl(cir, &fpath).unwrap();
-    compiler(&fpath, &vpath);
+    compiler(&fpath, &path);
 }
 
 #[cfg(test)]
