@@ -1,11 +1,11 @@
-use firrtl::*;
-
 #[test]
 fn test_integration() {
-    use ast::Info::*;
-    use ast::Stmt::*;
-    use ast::DefModule::*;
-    use ast::DefCircuit::*;
+    use firrtl::emit;
+    use firrtl::read_verilog;
+    use firrtl::ast::Info::*;
+    use firrtl::ast::Stmt::*;
+    use firrtl::ast::DefModule::*;
+    use firrtl::ast::DefCircuit::*;
     let name = "test_integration";
     let path = format!("{}.v", name);
     let module = Module(NoInfo, name.to_string(), vec![], EmptyStmt);
