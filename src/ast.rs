@@ -1,5 +1,5 @@
+use pretty::{BoxDoc, Doc};
 use std::rc::Rc;
-use pretty::{Doc, BoxDoc};
 
 pub trait ToDoc {
     fn to_doc(&self) -> Doc<BoxDoc<()>>;
@@ -25,15 +25,13 @@ impl ToDoc for Info {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Info::NoInfo => Doc::text(""),
-            Info::FileInfo(info) => {
-                Doc::space()
-                    .append(Doc::text("@["))
-                    .append(Doc::text(info))
-                    .append(Doc::text("]")).group()
-            }
+            Info::FileInfo(info) => Doc::space()
+                .append(Doc::text("@["))
+                .append(Doc::text(info))
+                .append(Doc::text("]"))
+                .group(),
         }
     }
-
 }
 
 #[derive(Clone, Debug)]
@@ -46,11 +44,9 @@ impl ToDoc for Width {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Width::UnknownWidth => Doc::text(""),
-            Width::IntWidth(width) => {
-                Doc::text("<")
-                    .append(Doc::as_string(width))
-                    .append(Doc::text(">"))
-            },
+            Width::IntWidth(width) => Doc::text("<")
+                .append(Doc::as_string(width))
+                .append(Doc::text(">")),
         }
     }
 }
@@ -67,28 +63,21 @@ pub enum Type {
 }
 
 impl ToDoc for Type {
-    fn to_doc(&self) ->  Doc<BoxDoc<()>> {
+    fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Type::Clock => Doc::text("Clock"),
             Type::Reset => Doc::text("Reset"),
             Type::UnknownType => Doc::text("?"),
-            Type::UInt(width) => {
-                Doc::text("UInt").append(width.to_doc())
-            },
-            Type::SInt(width) => {
-                Doc::text("SInt").append(width.to_doc())
-            },
-            Type::Fixed(width, point) => {
-                Doc::text("Fixed")
-                    .append(width.to_doc())
-                    .append(point.to_doc())
-            },
-            Type::Vector(ty, size) => {
-                ty.to_doc()
-                    .append(Doc::text("["))
-                    .append(Doc::as_string(size))
-                    .append(Doc::text("]"))
-            },
+            Type::UInt(width) => Doc::text("UInt").append(width.to_doc()),
+            Type::SInt(width) => Doc::text("SInt").append(width.to_doc()),
+            Type::Fixed(width, point) => Doc::text("Fixed")
+                .append(width.to_doc())
+                .append(point.to_doc()),
+            Type::Vector(ty, size) => ty
+                .to_doc()
+                .append(Doc::text("["))
+                .append(Doc::as_string(size))
+                .append(Doc::text("]")),
         }
     }
 }
@@ -107,36 +96,31 @@ impl ToDoc for Expr {
         match self {
             Expr::Reference(name, _) => Doc::text(name),
             Expr::SubField(expr, name, _) => {
-                expr.to_doc()
-                    .append(Doc::text("."))
-                    .append(Doc::text(name))
-            },
-            Expr::SubIndex(expr, value, _) => {
-                expr.to_doc()
-                    .append(Doc::text("["))
-                    .append(Doc::as_string(value))
-                    .append(Doc::text("]"))
-            },
-            Expr::SubAccess(e1, e2, _) => {
-                e1.to_doc()
-                    .append(Doc::text("["))
-                    .append(e2.to_doc())
-                    .append(Doc::text("]"))
-            },
+                expr.to_doc().append(Doc::text(".")).append(Doc::text(name))
+            }
+            Expr::SubIndex(expr, value, _) => expr
+                .to_doc()
+                .append(Doc::text("["))
+                .append(Doc::as_string(value))
+                .append(Doc::text("]")),
+            Expr::SubAccess(e1, e2, _) => e1
+                .to_doc()
+                .append(Doc::text("["))
+                .append(e2.to_doc())
+                .append(Doc::text("]")),
             Expr::DoPrim(op, args, consts, _) => {
-                let mut to_doc = op.to_doc()
-                    .append(Doc::text("("))
-                    .append(Doc::intersperse(
-                        args.iter().map(|i| i.to_doc()),
-                        Doc::text(", ")));
+                let mut to_doc = op.to_doc().append(Doc::text("(")).append(Doc::intersperse(
+                    args.iter().map(|i| i.to_doc()),
+                    Doc::text(", "),
+                ));
                 if consts.len() > 0 {
-                    to_doc = to_doc.append(Doc::text(", "))
-                            .append(Doc::intersperse(
-                                consts.iter().map(|i| Doc::as_string(i)),
-                                Doc::text(", ")));
+                    to_doc = to_doc.append(Doc::text(", ")).append(Doc::intersperse(
+                        consts.iter().map(|i| Doc::as_string(i)),
+                        Doc::text(", "),
+                    ));
                 }
                 to_doc = to_doc.append(Doc::text(")"));
-                 to_doc
+                to_doc
             }
         }
     }
@@ -145,7 +129,7 @@ impl ToDoc for Expr {
 #[derive(Clone, Debug)]
 pub enum Dir {
     Input,
-    Output
+    Output,
 }
 
 impl ToDoc for Dir {
@@ -165,17 +149,17 @@ pub enum DefPort {
 impl ToDoc for DefPort {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            DefPort::Port(info, name, dir, tpe) => {
-                dir.to_doc()
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text(":"))
-                    .append(Doc::space())
-                    .append(tpe.to_doc())
-                    .append(info.to_doc())
-                    .append(Doc::newline()).group()
-            }
+            DefPort::Port(info, name, dir, tpe) => dir
+                .to_doc()
+                .append(Doc::space())
+                .append(Doc::text(name))
+                .append(Doc::space())
+                .append(Doc::text(":"))
+                .append(Doc::space())
+                .append(tpe.to_doc())
+                .append(info.to_doc())
+                .append(Doc::newline())
+                .group(),
         }
     }
 }
@@ -266,43 +250,39 @@ impl ToDoc for Stmt {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
             Stmt::EmptyStmt => Doc::text("skip"),
-            Stmt::DefInstance(info, name, module) => {
-                Doc::text("inst")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("of"))
-                    .append(Doc::space())
-                    .append(Doc::text(module))
-                    .append(info.to_doc()).group()
-            },
-            Stmt::DefNode(info, name, expr) => {
-                Doc::text("node")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("="))
-                    .append(Doc::space())
-                    .append(expr.to_doc())
-                    .append(info.to_doc()).group()
-            },
+            Stmt::DefInstance(info, name, module) => Doc::text("inst")
+                .append(Doc::space())
+                .append(Doc::text(name))
+                .append(Doc::space())
+                .append(Doc::text("of"))
+                .append(Doc::space())
+                .append(Doc::text(module))
+                .append(info.to_doc())
+                .group(),
+            Stmt::DefNode(info, name, expr) => Doc::text("node")
+                .append(Doc::space())
+                .append(Doc::text(name))
+                .append(Doc::space())
+                .append(Doc::text("="))
+                .append(Doc::space())
+                .append(expr.to_doc())
+                .append(info.to_doc())
+                .group(),
             Stmt::Block(stmts) => {
                 let mut to_doc = Doc::text("");
                 for s in stmts {
-                    to_doc = to_doc.append(s.to_doc())
-                        .append(Doc::newline());
+                    to_doc = to_doc.append(s.to_doc()).append(Doc::newline());
                 }
                 to_doc
-            },
-            Stmt::Connect(info, loc, expr) => {
-                Doc::text("")
-                    .append(loc.to_doc())
-                    .append(Doc::space())
-                    .append(Doc::text("<="))
-                    .append(Doc::space())
-                    .append(expr.to_doc())
-                    .append(info.to_doc()).group()
             }
+            Stmt::Connect(info, loc, expr) => Doc::text("")
+                .append(loc.to_doc())
+                .append(Doc::space())
+                .append(Doc::text("<="))
+                .append(Doc::space())
+                .append(expr.to_doc())
+                .append(info.to_doc())
+                .group(),
         }
     }
 }
@@ -316,24 +296,22 @@ pub enum Param {
 impl ToDoc for Param {
     fn to_doc(&self) -> Doc<BoxDoc<()>> {
         match self {
-            Param::IntParam(name, value) => {
-                Doc::text("parameter")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("="))
-                    .append(Doc::space())
-                    .append(Doc::as_string(value)).group()
-            },
-            Param::StringParam(name, value) => {
-                Doc::text("parameter")
-                    .append(Doc::space())
-                    .append(Doc::text(name))
-                    .append(Doc::space())
-                    .append(Doc::text("="))
-                    .append(Doc::space())
-                    .append(Doc::text(value)).group()
-            },
+            Param::IntParam(name, value) => Doc::text("parameter")
+                .append(Doc::space())
+                .append(Doc::text(name))
+                .append(Doc::space())
+                .append(Doc::text("="))
+                .append(Doc::space())
+                .append(Doc::as_string(value))
+                .group(),
+            Param::StringParam(name, value) => Doc::text("parameter")
+                .append(Doc::space())
+                .append(Doc::text(name))
+                .append(Doc::space())
+                .append(Doc::text("="))
+                .append(Doc::space())
+                .append(Doc::text(value))
+                .group(),
         }
     }
 }
@@ -341,7 +319,7 @@ impl ToDoc for Param {
 #[derive(Clone, Debug)]
 pub enum DefModule {
     Module(Info, String, Vec<DefPort>, Stmt),
-    ExtModule(Info, String, Vec<DefPort>, String, Vec<Param>)
+    ExtModule(Info, String, Vec<DefPort>, String, Vec<Param>),
 }
 
 impl ToDoc for DefModule {
@@ -354,12 +332,12 @@ impl ToDoc for DefModule {
                     .append(Doc::space())
                     .append(Doc::text(":"))
                     .append(info.to_doc())
-                    .append(Doc::newline()).group();
+                    .append(Doc::newline())
+                    .group();
                 for p in ports {
                     to_doc = to_doc.append(p.to_doc());
                 }
-                to_doc = to_doc.append(stmt.to_doc())
-                    .nest(2).group();
+                to_doc = to_doc.append(stmt.to_doc()).nest(2).group();
                 to_doc
             }
             DefModule::ExtModule(info, name, ports, defname, _) => {
@@ -369,16 +347,19 @@ impl ToDoc for DefModule {
                     .append(Doc::space())
                     .append(Doc::text(":"))
                     .append(info.to_doc())
-                    .append(Doc::newline()).group();
+                    .append(Doc::newline())
+                    .group();
                 for p in ports {
                     to_doc = to_doc.append(p.to_doc());
                 }
-                    to_doc = to_doc.append(Doc::text("defname"))
-                        .append(Doc::space())
-                        .append(Doc::text("="))
-                        .append(Doc::space())
-                        .append(Doc::text(defname))
-                        .nest(2).group();
+                to_doc = to_doc
+                    .append(Doc::text("defname"))
+                    .append(Doc::space())
+                    .append(Doc::text("="))
+                    .append(Doc::space())
+                    .append(Doc::text(defname))
+                    .nest(2)
+                    .group();
                 to_doc
             }
         }
@@ -399,9 +380,11 @@ impl ToDoc for DefCircuit {
                     .append(Doc::text(main))
                     .append(Doc::space())
                     .append(Doc::text(":"))
-                    .append(info.to_doc()).group();
+                    .append(info.to_doc())
+                    .group();
                 for m in modules {
-                    to_doc = to_doc.append(Doc::newline())
+                    to_doc = to_doc
+                        .append(Doc::newline())
                         .append(m.to_doc())
                         .append(Doc::newline());
                 }
@@ -414,17 +397,17 @@ impl ToDoc for DefCircuit {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use Info::*;
-    use Width::*;
-    use Type::*;
-    use Expr::*;
-    use PrimOp::*;
-    use Dir::*;
-    use Stmt::*;
-    use Param::*;
-    use DefPort::*;
-    use DefModule::*;
     use DefCircuit::*;
+    use DefModule::*;
+    use DefPort::*;
+    use Dir::*;
+    use Expr::*;
+    use Info::*;
+    use Param::*;
+    use PrimOp::*;
+    use Stmt::*;
+    use Type::*;
+    use Width::*;
 
     #[test]
     fn test_info_noinfo() {
@@ -720,7 +703,10 @@ mod tests {
         let expr2 = Reference(op2.to_string(), UInt(IntWidth(w)));
         let expr = vec![expr1, expr2];
         let expect = format!("add({}, {})", op1, op2);
-        assert_eq!(DoPrim(Add, expr, vec![], UInt(IntWidth(w))).to_pretty(), expect);
+        assert_eq!(
+            DoPrim(Add, expr, vec![], UInt(IntWidth(w))).to_pretty(),
+            expect
+        );
     }
 
     #[test]
@@ -731,7 +717,10 @@ mod tests {
         let h = 5;
         let expr = vec![Reference(op1.to_string(), UInt(IntWidth(w)))];
         let expect = format!("bits({}, {}, {})", op1, h, l);
-        assert_eq!(DoPrim(Bits, expr, vec![h, l], UInt(IntWidth(h - l + 1))).to_pretty(), expect);
+        assert_eq!(
+            DoPrim(Bits, expr, vec![h, l], UInt(IntWidth(h - l + 1))).to_pretty(),
+            expect
+        );
     }
 
     #[test]
@@ -788,7 +777,10 @@ mod tests {
         let i = "a0";
         let m = "adder";
         let expect = format!("inst {} of {}", i, m);
-        assert_eq!(DefInstance(NoInfo, i.to_string(), m.to_string()).to_pretty(), expect);
+        assert_eq!(
+            DefInstance(NoInfo, i.to_string(), m.to_string()).to_pretty(),
+            expect
+        );
     }
 
     #[test]
@@ -821,7 +813,10 @@ mod tests {
         let name = "ADDR";
         let val = "{32'h00, 32'h01}";
         let expect = format!("parameter {} = {}", name, val);
-        assert_eq!(StringParam(name.to_string(), val.to_string()).to_pretty(), expect);
+        assert_eq!(
+            StringParam(name.to_string(), val.to_string()).to_pretty(),
+            expect
+        );
     }
 
     #[test]
@@ -829,14 +824,20 @@ mod tests {
         let n = "foo";
         let d = "bar";
         let expect = format!("extmodule {} :\n  defname = {}", n, d);
-        assert_eq!(ExtModule(NoInfo, n.to_string(), vec![], d.to_string(), vec![]).to_pretty(), expect);
+        assert_eq!(
+            ExtModule(NoInfo, n.to_string(), vec![], d.to_string(), vec![]).to_pretty(),
+            expect
+        );
     }
 
     #[test]
     fn test_defmodule_module() {
         let n = "foo";
         let expect = format!("module {} :\n  skip", n);
-        assert_eq!(Module(NoInfo, n.to_string(), vec![], EmptyStmt).to_pretty(), expect);
+        assert_eq!(
+            Module(NoInfo, n.to_string(), vec![], EmptyStmt).to_pretty(),
+            expect
+        );
     }
 
     #[test]
