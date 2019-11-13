@@ -49,8 +49,8 @@ pub fn verilog(cir: &DefCircuit, path: &Path) {
         },
         None => panic!("Filename extraction failed"),
     };
-    let name_with_ext = format!("{}.fir", name);
-    let fpath = Path::new(&name_with_ext);
+    let mut fpath = path.with_file_name(&name).to_path_buf();
+    fpath.set_extension("fir");
     firrtl(cir, &fpath).unwrap();
     compiler(&fpath, path);
 }
