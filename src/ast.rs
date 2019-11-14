@@ -89,6 +89,7 @@ pub enum Expr {
     SubIndex(Rc<Expr>, u64, Type),
     SubAccess(Rc<Expr>, Rc<Expr>, Type),
     DoPrim(PrimOp, Vec<Expr>, Vec<u64>, Type),
+    Mux(Rc<Expr>, Rc<Expr>, Rc<Expr>),
 }
 
 impl ToDoc for Expr {
@@ -109,19 +110,32 @@ impl ToDoc for Expr {
                 .append(e2.to_doc())
                 .append(Doc::text("]")),
             Expr::DoPrim(op, args, consts, _) => {
-                let mut to_doc = op.to_doc().append(Doc::text("(")).append(Doc::intersperse(
+                let mut doc = op.to_doc().append(Doc::text("(")).append(Doc::intersperse(
                     args.iter().map(|i| i.to_doc()),
                     Doc::text(", "),
                 ));
                 if consts.len() > 0 {
-                    to_doc = to_doc.append(Doc::text(", ")).append(Doc::intersperse(
+                    doc = doc.append(Doc::text(", ")).append(Doc::intersperse(
                         consts.iter().map(|i| Doc::as_string(i)),
                         Doc::text(", "),
                     ));
                 }
-                to_doc = to_doc.append(Doc::text(")"));
-                to_doc
-            }
+                doc = doc.append(Doc::text(")"));
+                doc
+            },
+            Expr::Mux(cond, tval, fval) => {
+                Doc::text("mux")
+                    .append(Doc::text("("))
+                    .append(cond.to_doc())
+                    .append(Doc::text(","))
+                    .append(Doc::space())
+                    .append(tval.to_doc())
+                    .append(Doc::text(","))
+                    .append(Doc::space())
+                    .append(fval.to_doc())
+                    .append(Doc::text(")"))
+                    .group()
+            },
         }
     }
 }
@@ -719,6 +733,21 @@ mod tests {
         let expect = format!("bits({}, {}, {})", op1, h, l);
         assert_eq!(
             DoPrim(Bits, expr, vec![h, l], UInt(IntWidth(h - l + 1))).to_pretty(),
+            expect
+        );
+    }
+
+    #[test]
+    fn test_expr_mux() {
+        let a = "a";
+        let b = "b";
+        let c = "c";
+        let expr1 = Rc::new(Reference(a.to_string(), UnknownType));
+        let expr2 = Rc::new(Reference(b.to_string(), UnknownType));
+        let expr3 = Rc::new(Reference(c.to_string(), UnknownType));
+        let expect = format!("mux({}, {}, {})", a, b, c);
+        assert_eq!(
+            Mux(expr1, expr2, expr3).to_pretty(),
             expect
         );
     }
