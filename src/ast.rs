@@ -269,6 +269,7 @@ pub enum Stmt {
     DefNode(Info, String, Expr),
     Block(Vec<Stmt>),
     Connect(Info, Expr, Expr),
+    DefRegister(Info, String, Type, Expr, Expr, Expr),
 }
 
 impl ToDoc for Stmt {
@@ -308,6 +309,39 @@ impl ToDoc for Stmt {
                 .append(expr.to_doc())
                 .append(info.to_doc())
                 .group(),
+            Stmt::DefRegister(info, name, ty, clock, reset, init) => {
+                let mut doc = Doc::text("reg")
+                    .append(Doc::space())
+                    .append(Doc::text(name))
+                    .append(Doc::space())
+                    .append(Doc::text(":"))
+                    .append(Doc::space())
+                    .append(ty.to_doc())
+                    .append(Doc::text(","))
+                    .append(Doc::space())
+                    .append(clock.to_doc())
+                    .append(Doc::space())
+                    .append(Doc::text("with"))
+                    .append(Doc::space())
+                    .append(Doc::text(":"))
+                    .group();
+                doc = doc.append(Doc::newline())
+                    .append(Doc::text("reset"))
+                    .append(Doc::space())
+                    .append(Doc::text("=>"))
+                    .append(Doc::space())
+                    .append(Doc::text("("))
+                    .append(reset.to_doc())
+                    .append(Doc::text(","))
+                    .append(Doc::space())
+                    .append(init.to_doc())
+                    .append(Doc::text(")"))
+                    .append(Doc::space())
+                    .append(info.to_doc())
+                    .nest(2)
+                    .group();
+                doc
+            },
         }
     }
 }
@@ -851,6 +885,21 @@ mod tests {
         let expr2 = Reference(op2.to_string(), UnknownType);
         let expect = format!("{} <= {}", op1, op2);
         assert_eq!(Connect(NoInfo, expr1, expr2).to_pretty(), expect);
+    }
+
+    #[test]
+    fn test_stmt_def_register() {
+        let clock = "clock";
+        let reset = "reset";
+        let init = "init";
+        let reg = "mreg";
+        let w = 32;
+        let ty = UInt(IntWidth(w));
+        let clock_expr = Reference(clock.to_string(), UnknownType);
+        let reset_expr = Reference(reset.to_string(), UnknownType);
+        let init_expr = Reference(init.to_string(), UnknownType);
+        let expect = format!("reg {} : UInt<{}>, {} with :\n  reset => ({}, {}) ", reg, w, clock, reset, init);
+        assert_eq!(DefRegister(NoInfo, reg.to_string(), ty, clock_expr, reset_expr, init_expr).to_pretty(), expect);
     }
 
     #[test]
