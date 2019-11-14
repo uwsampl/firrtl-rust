@@ -90,6 +90,7 @@ pub enum Expr {
     SubAccess(Rc<Expr>, Rc<Expr>, Type),
     DoPrim(PrimOp, Vec<Expr>, Vec<u64>, Type),
     Mux(Rc<Expr>, Rc<Expr>, Rc<Expr>),
+    ValidIf(Rc<Expr>, Rc<Expr>),
 }
 
 impl ToDoc for Expr {
@@ -133,6 +134,16 @@ impl ToDoc for Expr {
                     .append(Doc::text(","))
                     .append(Doc::space())
                     .append(fval.to_doc())
+                    .append(Doc::text(")"))
+                    .group()
+            },
+            Expr::ValidIf(cond, val) => {
+                Doc::text("validif")
+                    .append(Doc::text("("))
+                    .append(cond.to_doc())
+                    .append(Doc::text(","))
+                    .append(Doc::space())
+                    .append(val.to_doc())
                     .append(Doc::text(")"))
                     .group()
             },
@@ -748,6 +759,19 @@ mod tests {
         let expect = format!("mux({}, {}, {})", a, b, c);
         assert_eq!(
             Mux(expr1, expr2, expr3).to_pretty(),
+            expect
+        );
+    }
+
+    #[test]
+    fn test_expr_validif() {
+        let a = "a";
+        let b = "b";
+        let expr1 = Rc::new(Reference(a.to_string(), UnknownType));
+        let expr2 = Rc::new(Reference(b.to_string(), UnknownType));
+        let expect = format!("validif({}, {})", a, b);
+        assert_eq!(
+            ValidIf(expr1, expr2).to_pretty(),
             expect
         );
     }
