@@ -123,30 +123,26 @@ impl ToDoc for Expr {
                 }
                 doc = doc.append(Doc::text(")"));
                 doc
-            },
-            Expr::Mux(cond, tval, fval) => {
-                Doc::text("mux")
-                    .append(Doc::text("("))
-                    .append(cond.to_doc())
-                    .append(Doc::text(","))
-                    .append(Doc::space())
-                    .append(tval.to_doc())
-                    .append(Doc::text(","))
-                    .append(Doc::space())
-                    .append(fval.to_doc())
-                    .append(Doc::text(")"))
-                    .group()
-            },
-            Expr::ValidIf(cond, val) => {
-                Doc::text("validif")
-                    .append(Doc::text("("))
-                    .append(cond.to_doc())
-                    .append(Doc::text(","))
-                    .append(Doc::space())
-                    .append(val.to_doc())
-                    .append(Doc::text(")"))
-                    .group()
-            },
+            }
+            Expr::Mux(cond, tval, fval) => Doc::text("mux")
+                .append(Doc::text("("))
+                .append(cond.to_doc())
+                .append(Doc::text(","))
+                .append(Doc::space())
+                .append(tval.to_doc())
+                .append(Doc::text(","))
+                .append(Doc::space())
+                .append(fval.to_doc())
+                .append(Doc::text(")"))
+                .group(),
+            Expr::ValidIf(cond, val) => Doc::text("validif")
+                .append(Doc::text("("))
+                .append(cond.to_doc())
+                .append(Doc::text(","))
+                .append(Doc::space())
+                .append(val.to_doc())
+                .append(Doc::text(")"))
+                .group(),
         }
     }
 }
@@ -325,7 +321,8 @@ impl ToDoc for Stmt {
                     .append(Doc::space())
                     .append(Doc::text(":"))
                     .group();
-                doc = doc.append(Doc::newline())
+                doc = doc
+                    .append(Doc::newline())
                     .append(Doc::text("reset"))
                     .append(Doc::space())
                     .append(Doc::text("=>"))
@@ -341,7 +338,7 @@ impl ToDoc for Stmt {
                     .nest(2)
                     .group();
                 doc
-            },
+            }
         }
     }
 }
@@ -791,10 +788,7 @@ mod tests {
         let expr2 = Rc::new(Reference(b.to_string(), UnknownType));
         let expr3 = Rc::new(Reference(c.to_string(), UnknownType));
         let expect = format!("mux({}, {}, {})", a, b, c);
-        assert_eq!(
-            Mux(expr1, expr2, expr3).to_pretty(),
-            expect
-        );
+        assert_eq!(Mux(expr1, expr2, expr3).to_pretty(), expect);
     }
 
     #[test]
@@ -804,10 +798,7 @@ mod tests {
         let expr1 = Rc::new(Reference(a.to_string(), UnknownType));
         let expr2 = Rc::new(Reference(b.to_string(), UnknownType));
         let expect = format!("validif({}, {})", a, b);
-        assert_eq!(
-            ValidIf(expr1, expr2).to_pretty(),
-            expect
-        );
+        assert_eq!(ValidIf(expr1, expr2).to_pretty(), expect);
     }
 
     #[test]
@@ -898,8 +889,22 @@ mod tests {
         let clock_expr = Reference(clock.to_string(), UnknownType);
         let reset_expr = Reference(reset.to_string(), UnknownType);
         let init_expr = Reference(init.to_string(), UnknownType);
-        let expect = format!("reg {} : UInt<{}>, {} with :\n  reset => ({}, {}) ", reg, w, clock, reset, init);
-        assert_eq!(DefRegister(NoInfo, reg.to_string(), ty, clock_expr, reset_expr, init_expr).to_pretty(), expect);
+        let expect = format!(
+            "reg {} : UInt<{}>, {} with :\n  reset => ({}, {}) ",
+            reg, w, clock, reset, init
+        );
+        assert_eq!(
+            DefRegister(
+                NoInfo,
+                reg.to_string(),
+                ty,
+                clock_expr,
+                reset_expr,
+                init_expr
+            )
+            .to_pretty(),
+            expect
+        );
     }
 
     #[test]
