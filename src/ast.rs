@@ -11,7 +11,7 @@ pub trait ToDoc {
     }
 
     fn to_pretty(&self) -> String {
-        self.to_pretty_with_width(100)
+        self.to_pretty_with_width(250)
     }
 }
 
